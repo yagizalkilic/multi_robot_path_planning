@@ -9,8 +9,8 @@ A set of robots that are instructed to move along specified paths. The paths of 
 - A path is a sequence of adjacent segments and each segment s~i~ ∈ [0, *l*(π~i~ )], where *l*(π~i~ ) is the total length of the path.
 
 - Finally, the space occupied by a robot in configuration x~i~ is represented as *A*(x~i~ ).
-
-  ![image-20230714101804226](/home/milvus/.config/Typora/typora-user-images/image-20230714101804226.png)
+  
+![image-20230714101804226](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/314e429f-1588-4dc6-8e08-ffb3262d2d36)
 
 # Methodology
 
@@ -18,19 +18,19 @@ A set of robots that are instructed to move along specified paths. The paths of 
 
 Coordination diagrams represent all possible configurations and collusion regions along a robots path. Finding an obstacle free map from (0,0) to (1,1) in a coordination diagram provides a solution to the coordination problem, therefore they are commonly used in path coordination tasks. They were first introduced in [1].
 
-<img src="/home/milvus/.config/Typora/typora-user-images/image-20230714100139162.png" alt="image-20230714100139162" style="zoom:80%;" />
+<img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/1ef02f71-8533-4ce4-937c-32d34ef7d100" alt="1ef02f71-8533-4ce4-937c-32d34ef7d100" style="zoom:80%;" />
 
 ### Constructing the Diagram: Collusion Zones
 
 In order to construct the diagram, collusion zones can be defined as in [2]:
 
-![image-20230714095745315](/home/milvus/.config/Typora/typora-user-images/image-20230714095745315.png)
+![image-20230714095745315](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/1a3d7016-e2a5-4615-955e-c04bef1e4cba)
 
 #### A Simpler Approach
 
 If the robots assumed to be circular in shape and equal in size, the formulation above can be simplified to as in [3]:
 
-![image-20230714142608024](/home/milvus/.config/Typora/typora-user-images/image-20230714142608024.png)
+![image-20230714142608024](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/2b01d37a-f6b1-40a3-90ad-fa89ed7d471e)
 
 Where r is the radius of a robot.
 
@@ -38,13 +38,13 @@ Where r is the radius of a robot.
 
 In order to get a more accurate representation of the collusion space, the traces that robots create during their path can be examined as was done in [4].
 
-<img src="/home/milvus/.config/Typora/typora-user-images/image-20230714100553442.png" alt="image-20230714100553442" style="zoom:80%;" />
+<img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/e57342dc-c05e-4b91-bb86-4be2dc9d06e9" alt="image-e57342dc-c05e-4b91-bb86-4be2dc9d06e9" style="zoom:80%;" />
 
 ##### Approach 1: Spatial Discretization
 
 [4] mentions that the robots in question are considered to be convex polygonal robots that move along paths that are either straight line segments or arcs of a circle. Utilizing this property, it is possible to decompose the path into elementary collusion subpaths and compute separate coordination diagrams for decomposed path segments and combine them later. 
 
-![image-20230714133235061](/home/milvus/.config/Typora/typora-user-images/image-20230714133235061.png)![image-20230714133302133](/home/milvus/.config/Typora/typora-user-images/image-20230714133302133.png)
+![image-20230714133235061](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/9b0a41b2-3d1a-46f2-853b-8ac925d1c46a)![image-20230714133302133](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/15acac3e-4cc8-4e81-815a-f713ee0bfba6)
 
 Complexity of the collusion zone finding algorithm in [4]: *O*( *n* + *k* log( *k* ) ) where *n* represents amount of curves and *k* represents amount of parts which is half of the intersection amount *2k*.
 
@@ -56,11 +56,11 @@ Complexity of the collusion zone finding algorithm in [4]: *O*( *n* + *k* log( *
 
 With the bounding box approach an exact computation of the obstacles is not needed. 
 
-<img src="/home/milvus/.config/Typora/typora-user-images/image-20230713163342268.png" alt="image-20230713163342268" style="zoom:80%;" />
+<img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/a41935d8-b1cb-496f-b658-ff9dccd43c1f" alt="a41935d8-b1cb-496f-b658-ff9dccd43c1f" style="zoom:80%;" />
 
 However, this method has its setbacks as an existing solution can be lost if there exist one vertical and one horizontal line intersecting two obstacles as seen below.
 
-![image-20230714104300910](/home/milvus/.config/Typora/typora-user-images/image-20230714104300910.png)
+![image-20230714104300910](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/da17203d-a6d8-4268-a289-1c87cdd7169f)
 
 ### Constructing the Diagram: The n-Dimension Problem
 
@@ -68,15 +68,14 @@ When n robot paths are considered, the coordination diagram that would represent
 
 The n-dimensional space can instead be represented as a 2-D space by computing 2-D diagrams of each pair of robots. For *n* robots *n (n - 1) / 2* diagrams will be produced as shown in [4]. One such representation can be seen below where 5 robots occupy a coordination space.
 
-![image-20230714110711765](/home/milvus/.config/Typora/typora-user-images/image-20230714110711765.png)![image-20230714110725549](/home/milvus/.config/Typora/typora-user-images/image-20230714110725549.png)
-
-
+![image-20230714110711765](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/4aad8fb0-7086-4c4f-9aec-c3dccd5fa426)![image-20230714110725549](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/f713e667-4c06-4b7e-adb2-a9210be9be61)
 
 ## Coordination Planner
 
 After the coordination diagram is drawn, the optimal coordination path needs to be determined. The problem becomes that of finding a path in a directed graph. Algorithms can be selected to minimize, or fix the arrival time as in [8]. 
 
-![image-20230714123136606](/home/milvus/.config/Typora/typora-user-images/image-20230714123136606.png)
+![image-20230714123136606](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/cf200883-1940-4418-83c0-e07d3e0cdd7f)
+
 
 [5] separates the regions on a coordination diagram to put a constraint on the possible paths so that inefficient and blocking actions are filtered out. 
 
@@ -88,7 +87,7 @@ After the coordination diagram is drawn, the optimal coordination path needs to 
 
 Note that in a bounding box representation Umbra region would be discarded.
 
-![image-20230714124315100](/home/milvus/.config/Typora/typora-user-images/image-20230714124315100.png)
+![image-20230714124315100](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/7db3c4a9-ae69-489d-b806-35343a1df8f5)
 
 ## Supplementary Findings
 
