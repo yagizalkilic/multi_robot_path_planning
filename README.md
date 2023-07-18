@@ -24,13 +24,17 @@ Coordination diagrams represent all possible configurations and collusion region
 
 In order to construct the diagram, collusion zones can be defined as in [2]:
 
-![image-20230714095745315](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/1a3d7016-e2a5-4615-955e-c04bef1e4cba)
+```math
+X_{ij}^{coll} \ =\ \{\ ( s_{1} \ ,...,\ s_{N}\} \ \in \ S\ |\ A( \pi _{i}( s_{i})) \ \cap \ A( \pi _{j}( s_{j})) \ \neq \ \emptyset \ \}
+```
 
 #### A Simpler Approach
 
 If the robots assumed to be circular in shape and equal in size, the formulation above can be simplified to as in [3]:
 
-![image-20230714142608024](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/2b01d37a-f6b1-40a3-90ad-fa89ed7d471e)
+```math
+X_{ij}^{coll} \ =\ \{\ ( s_{1} \ ,...,\ s_{N}\} \ \in \ S\ |\ ||\ \pi _{i}( s_{i}) \ -\ \pi _{j}( s_{j}) \ ||\ \geq \ 2r\ \}
+```
 
 Where r is the radius of a robot.
 
