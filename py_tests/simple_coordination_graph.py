@@ -15,7 +15,7 @@ def generate_curve(length_min, length_max, num_segments, min_num_stops, max_num_
     stops = []
     
     # Generate stop points
-    for i in range(num_stops):
+    for i in range(num_stopnts):
         stops.append(( random.randint(0,100), random.randint(0,100)))
     
     x = np.linspace(stops[0][0], stops[1][0], num=partial_segments)
