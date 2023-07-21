@@ -57,7 +57,40 @@ def generate_curve(length_min, length_max, num_segments, min_num_stops, max_num_
 
 # Given four lists representing x and y coordinates of points on two lines,
 # calculate points where circular objects moving along the line collide
-def find_collision_points(x1, y1, x2, y2, r):
+def find_collision_points(x1, y1, x2, y2, r, dimension_length):
+    collusion_points = {}
+    for i in range(dimension_length):
+        for k in range(dimension_length):
+            # Calculate the distance between the points on each segment
+            distance = np.sqrt((x1[i] - x2[k])**2 + (y1[i] - y2[k])**2)
+
+            # If the distance is less than or equal to 2r there is a collusion
+            if distance <= 2 * r:
+
+                # Pass the segment position. The assumption here is that every
+                # segment is traversed in the same amount of time. Velocity
+                # should  be included for more realistic values
+                collusion_points[(i,k)] = True
+            else:
+                collusion_points[(i,k)] = False
+
+    return collusion_points
+
+# Find all collusions for each pair of paths
+def find_all_collusions(lines, r, dimension_length):
+    collusion_dict = {}
+    for i in range(len(lines) - 1 ):
+        for k in range((i+1), len(lines)):
+            collusion_pair = (i, k)
+            collusions = find_collision_points(
+                lines[i][0], lines[i][1], lines[k][0], lines[k][1], r, dimension_length)
+            collusion_dict[collusion_pair] = (collusions)
+        
+    return collusion_dict
+
+
+# calculate points where circular objects moving along the line collide
+def find_collision_points_old(x1, y1, x2, y2, r):
     collision_points_x = []
     collision_points_y = []
     for i in range(len(x1)):
@@ -77,12 +110,12 @@ def find_collision_points(x1, y1, x2, y2, r):
     return collision_points_x, collision_points_y
 
 # Find all collusions for each pair of paths
-def find_all_collusions(lines, r):
+def find_all_collusions_old(lines, r):
     collusion_dict = {}
     for i in range(len(lines) - 1 ):
         for k in range((i+1), len(lines)):
             collusion_pair = (i, k)
-            collusions_x, collusions_y = find_collision_points(
+            collusions_x, collusions_y = find_collision_points_old(
                 lines[i][0], lines[i][1], lines[k][0], lines[k][1], r)
             collusion_dict[collusion_pair] = (collusions_x, collusions_y)
         
@@ -93,6 +126,14 @@ def find_all_collusions(lines, r):
 # Distance between two points in an n-dimentional space
 def distance(point1, point2):
     return math.sqrt(sum((p1 - p2) ** 2 for p1, p2 in zip(point1, point2)))
+
+# Given a set of ordered points, compute the sum of all distances betweent them
+def get_distance_combination(points):
+    total_distance = 0
+    for i in range(len(points) - 1):
+        cur_distance = distance(points[i], points[i + 1])
+        total_distance = total_distance + cur_distance
+    return total_distance
 
 # Get a list of distances on every dimension
 def get_distances(point1, point2):
@@ -105,7 +146,7 @@ def get_distances(point1, point2):
 def generate_random_point(space_side_length, num_dimensions):
     coor_list = []
     for _ in range(num_dimensions):
-        coor_list.append(random.uniform(0, space_side_length))
+        coor_list.append(random.randint(0, space_side_length))
     return tuple(coor_list)
 
 def generate_around_goal(space_side_length, num_dimensions, goal):
@@ -137,6 +178,9 @@ class RRT:
         self.space_side_length = space_side_length
         self.collusion_dict = collusion_dict
         
+        self.total_elapsed_time = 0
+        self.average_node_generation = 0
+        
         self.max_distance = space_side_length ** num_dimensions + 1
         
         self.space_dimensions, self.start_point, self.target_point = \
@@ -148,16 +192,26 @@ class RRT:
         
         self.path_nodes, self.path_segments = [], []
         
+        self.longest_node_generated = None
+        self.longest_gen_time = 0
+        
         self.generate_tree()
         
         self.find_final_path()
         
-        
     def generate_tree(self):
+        total_start_time = time.time()
+        total_node_gen_time = 0
         done = False
+        
+        # Initialize points
         x_points = []
         y_points = []
         z_points = []
+        
+        colluded_x_points = []
+        colluded_y_points = []
+        colluded_z_points = []
     
         # Create the figure and axis for 3D plotting
         fig = plt.figure()
@@ -168,28 +222,56 @@ class RRT:
         ax.set_title('Real-time 3D Point Plotting')
         
         sc = ax.scatter([], [], [], marker='o')
+        sc_red = ax.scatter([], [], [], c = 'red', marker='o')
         
         ax.set_xlim(0, self.space_side_length)
         ax.set_ylim(0, self.space_side_length)
         ax.set_zlim(0, self.space_side_length)
         
         plt.ion() 
+        
+        # Count successful nodes
         point_count = 0
         while not done:
-            point = self.generate_node(point_count)
+            
+            start_time = time.time()
+            point, colluded_points = self.generate_node(point_count)
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            total_node_gen_time = total_node_gen_time + elapsed_time
+            
+            if elapsed_time > self.longest_gen_time:
+                self.longest_gen_time = elapsed_time
+                self.longest_node_generated = point
+            
             point_count = point_count + 1
+            
+            # Populate successful points
             x_points.append(point[0])
             y_points.append(point[1])
             z_points.append(point[2])
+
+            # Populate colluded points
+            for colluded_point in colluded_points:
+                colluded_x_points.append(colluded_point[0])
+                colluded_y_points.append(colluded_point[1])
+                colluded_z_points.append(colluded_point[2])
             
             sc._offsets3d = (x_points, y_points, z_points)
+            sc_red._offsets3d = (colluded_x_points, colluded_y_points, colluded_z_points)
     
             # Replot the updated points
             plt.draw()
-            plt.pause(0.1) 
+            plt.pause(0.0001)
             if self.is_done(self.node_list[-1][1]):
                 done = True
-        # After the loop ends, keep the plot open until it's closed by the user
+                
+        total_end_time = time.time()
+        total_elapsed_time = end_time - start_time
+        self.total_elapsed_time = total_elapsed_time
+        self.average_node_generation = total_node_gen_time / point_count
+        
+        
         plt.ioff()
         plt.show(block=False)
         self.path_segments.append([self.node_list[-1][1], self.target_point])
@@ -206,8 +288,8 @@ class RRT:
         point_ok = False
         node_name = "q{}".format(len(self.node_list))
         iteration = 0
+        colluded_points = []
         while not point_ok:
-            
             
             # Generate random coordinates
             if point_count % 4 == 2 and iteration < 5:
@@ -228,17 +310,24 @@ class RRT:
             vec_mag = distance(point, parent[1])
             
             random_vector = random.randint(1, 10)
+            
+            if vec_mag == 0:
+                continue
 
             # Get new node coordinates by adding unit vector components to parent coordinates
             new_point_coordinates = []
             for i in range(len(d_list)):
-                new_point_coordinates.append(parent[1][i] + random_vector * (d_list[i] / vec_mag))
+                new_point_coordinates.append(round(parent[1][i] + random_vector * (d_list[i] / vec_mag)))
+            
+            for i in new_point_coordinates:
+                if i < 0:
+                    continue
                 
             new_point = tuple(new_point_coordinates)
 
             # If newly created node
             if not self.is_valid(new_point):
-                pass
+                colluded_points.append(new_point)
             else:
                 point_ok = True
                 
@@ -249,11 +338,12 @@ class RRT:
        
         
         
-        return new_point
+        return new_point, colluded_points
 
     def nearest_node(self, point):
         least_distance = self.max_distance
         least_node = 0
+        # After the loop ends, keep the plot open until it's closed by the user     
         for i in range(len(self.node_list)):
             cur_dist = distance(point, self.node_list[i][1])
             if least_distance > cur_dist:
@@ -265,16 +355,23 @@ class RRT:
     
         for i in self.collusion_dict:
             coordinates = (i[0],i[1])
-            x_list = self.collusion_dict[i][0]
-            y_list = self.collusion_dict[i][1]
+            collusions = self.collusion_dict[i]
             
-            for n in range(len(x_list)):
-                dist = distance((x_list[n], y_list[n]), (point[coordinates[0]], 
-                                                         point[coordinates[1]]))
-                if ( dist < 1.1):
-                    return False
+            point_to_check = (point[coordinates[0]], point[coordinates[1]])
+            
+            if collusions[point_to_check] == True:
+                return False
         
         return True
+    
+    def execute_bias_strategy(self, strategy):
+        match strategy:
+            case "CA":
+                return self.complete_any()
+            case "RJ":
+                return self.resolve_junction()
+            case "RC":
+                return self.resolve_convoy()
 
     def find_final_path(self):
         cur_node = self.node_list[-1]
@@ -290,14 +387,22 @@ class RRT:
         for i in self.path_nodes:
             points.append(i[1])
         return points
+    
+    def show_longest_generation(self):
+        print("Longest node generation was on the node:")
+        print(self.longest_node_generated)
+        print("And it took:")
+        print(self.longest_gen_time)
+        print("Average node generation time was:")
+        print(self.average_node_generation)
 
 
 # Line properties
 x_bound = 200 # max x value of any point on line
 y_bound = 200 # max y value of any point on line
 
-min_num_stops = 2 # min number of times slope can be shifted
-max_num_stops = 3 # max number of times slope can be shifted
+min_num_stops = 3 # min number of times slope can be shifted
+max_num_stops = 5 # max number of times slope can be shifted
 
 length_min = 20 # min length of a line segment
 length_max = 30 # max length of a line segment
@@ -318,7 +423,8 @@ radius = 10 # Radius of a circular robot
 num_robots = line_amount
 
 # Fİnd all collusion pairs
-all_collusions = find_all_collusions(lines, radius)
+all_collusions = find_all_collusions(lines, radius, num_segments)
+display_collusions = find_all_collusions_old(lines, radius)
 
 # Segment amount is identical to travel time for simplicity
 total_travel_time_1 = num_segments
@@ -349,7 +455,13 @@ elapsed_time = end_time - start_time
 print(f"Elapsed time while calculating schedule: {elapsed_time}")
 
 schedule = schedule_rrt.get_final_path()
-print(schedule)
+
+best_distance = distance(schedule_rrt.start_point, schedule_rrt.target_point)
+obtained_distance = get_distance_combination(schedule)
+distance_ratio = obtained_distance / best_distance
+print (f"Best possible distance without collusions: {best_distance}")
+print (f"Distance obtained by RRT: {obtained_distance}, ratio between best and obtained: {distance_ratio}")
+schedule_rrt.show_longest_generation()
 
 schedule_pairs_x = []
 schedule_pairs_y = []
@@ -366,53 +478,62 @@ for i in range(len(lines) - 1 ):
 
 pair_count = 0
 # Print each path pair with collusions
-for i in range(len(lines) - 1 ):
-    for k in range((i+1), len(lines)):
+fig = plt.figure()
+
+# Counter for the subplot positions
+subplot_count = 1
+
+# Print each path pair with collisions
+for i in range(len(lines) - 1):
+    subplot_count = subplot_count + (2 * i)
+    for k in range((i + 1), len(lines)):
         current_pair = (lines[i], lines[k])
-        current_collusion = all_collusions[(i,k)]
-        
-        plt.figure()
-        plt.subplot(1, 2, 1)
+        current_collusion = display_collusions[(i, k)]
+
+        # Create the first subplot
+        plt.subplot(2, 4, subplot_count)
         plt.xlim(0, x_bound)
         plt.ylim(0, y_bound)
-                
+
         plt.xlabel('X')
         plt.ylabel('Y')
-        plt.title('Paths for line ' + str(i + 1) + ' and line ' + str(k+1))
-        
+        plt.title('Paths for line ' + str(i + 1) + ' and line ' + str(k + 1))
+
         circle_x, circle_y = points_around_point(current_pair[0][0][0], current_pair[0][1][0], radius)
         plt.plot(current_pair[0][0], current_pair[0][1], '-o', markersize=1)
-        plt.scatter(circle_x, circle_y, c = "gray")
-        plt.text(current_pair[0][0][0], current_pair[0][1][0], "path " +str(i + 1))
-        plt.scatter(current_pair[0][0][current_collusion[0]], 
-                    current_pair[0][1][current_collusion[0]], c = "r")
-        
-        
+        plt.scatter(circle_x, circle_y, c="gray")
+        plt.text(current_pair[0][0][0], current_pair[0][1][0], "path " + str(i + 1))
+        plt.scatter(current_pair[0][0][current_collusion[0]],
+                    current_pair[0][1][current_collusion[0]], c="r")
+
         circle_x, circle_y = points_around_point(current_pair[1][0][0], current_pair[1][1][0], radius)
         plt.plot(current_pair[1][0], current_pair[1][1], '-o', markersize=1)
-        plt.scatter(circle_x, circle_y, c = "gray")
+        plt.scatter(circle_x, circle_y, c="gray")
         plt.text(current_pair[1][0][0], current_pair[1][1][0], "path " + str(k + 1))
-        plt.scatter(current_pair[1][0][current_collusion[1]], 
-                    current_pair[1][1][current_collusion[1]], c = "y")
-        
-        plt.subplot(1, 2, 2)
-        
+        plt.scatter(current_pair[1][0][current_collusion[1]],
+                    current_pair[1][1][current_collusion[1]], c="y")
+
+        # Create the second subplot
+        plt.subplot(2, 4, subplot_count + 1)
+
         plt.plot(current_collusion[0], current_collusion[1], 'ro')
-        plt.xlabel('Time 1, Path ' + str(i + 1) )
-        plt.ylabel('Time 2, Path ' + str(k + 1) )
+        plt.xlabel('Time 1, Path ' + str(i + 1))
+        plt.ylabel('Time 2, Path ' + str(k + 1))
         plt.xlim(0, total_travel_time_1)
         plt.ylim(0, total_travel_time_2)
         plt.title('Coordination Graph')
-        
 
         plt.scatter(schedule_pairs_x[pair_count], schedule_pairs_y[pair_count], c='g', label='Final Schedule')
         pair_count = pair_count + 1
 
-        
-        plt.show(block=False)
+        # Increment the subplot count for the next pair
+        subplot_count += 2
 
+# Adjust the layout to prevent overlapping of subplots
+plt.tight_layout()
 
-
+# Display all subplots together
+plt.show(block=False)
 
 
 
