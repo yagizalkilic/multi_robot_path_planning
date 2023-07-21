@@ -4,11 +4,11 @@
 
 A set of robots that are instructed to move along specified paths. The paths of the robots are subject to change in the event of an interruption during their movement.  A robot *N* is defined in the 2-D configuration space C such that:
 
-- Every robot follows a path *π*~n~. 
+- Every robot follows a path _π_<sub>_n_</sub>. 
 
-- A path is a sequence of adjacent segments and each segment s~i~ ∈ [0, *l*(π~i~ )], where *l*(π~i~ ) is the total length of the path.
+- A path is a sequence of adjacent segments and each segment s<sub>i</sub> ∈ [0, _l_(π<sub>i</sub> )], where _l_(π<sub>i</sub> ) is the total length of the path.
 
-- Finally, the space occupied by a robot in configuration x~i~ is represented as *A*(x~i~ ).
+- Finally, the space occupied by a robot in configuration x<sub>i</sub> is represented as _A_(x<sub>i</sub> ).
   
 ![image-20230714101804226](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/314e429f-1588-4dc6-8e08-ffb3262d2d36)
 
