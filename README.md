@@ -1,3 +1,11 @@
+## Program information
+
+- python scripts are for the initial testing of the general methods:
+  - simple_coordination_graph.py: simulates coordination graphs for 2 robots along a specified path
+  - 3D_coordination_euclidian.py: coordinates 3 robots on specified paths, visualizes the RRT algorithm. Uses euclidian distance to calculate proximity to collusion zones.
+  - 3D_coordination_grid.py: coordinates 3 robots on specified paths, visualizes the RRT algorithm. Puts paths and collusions on a grid, is more efficient.
+  - n_robot_coordination.py: calculates coordination graps for n robots. Cannot visualize in 3-D
+
 # Multi-Robot Path Planning on Predefined Routes
 
 # Problem Definition
