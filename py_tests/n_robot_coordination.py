@@ -420,6 +420,9 @@ print(f"Elapsed time while calculating schedule: {elapsed_time}")
 
 schedule = schedule_rrt.get_final_path()
 
+for s in schedule:
+    print(s)
+
 best_distance = distance(schedule_rrt.start_point, schedule_rrt.target_point)
 obtained_distance = get_distance_combination(schedule)
 distance_ratio = obtained_distance / best_distance
@@ -516,4 +519,3 @@ plt.tight_layout()
 
 # Display all subplots together
 plt.show(block=False)
-

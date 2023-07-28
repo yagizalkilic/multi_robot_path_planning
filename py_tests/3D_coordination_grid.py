@@ -195,6 +195,17 @@ class RRT:
         self.longest_node_generated = None
         self.longest_gen_time = 0
         
+        self.max_nodes = 5000
+        
+        self.total_weight = int(4 * num_dimensions * ( num_dimensions - 1 ) / 2)
+        self.weights = {tuple(self.target_point): int(self.total_weight / 4)} 
+        self.weight_point_list = []
+        
+        self.generate_weights()
+        self.generate_weight_point_list()
+        
+        self.weight_mod = len(self.weight_point_list)
+        
         self.generate_tree()
         
         self.find_final_path()
@@ -290,13 +301,13 @@ class RRT:
         iteration = 0
         colluded_points = []
         while not point_ok:
-            
+            point_to_generate_around = self.weight_point_list[point_count % self.weight_mod]
             # Generate random coordinates
-            if point_count % 4 == 2 and iteration < 5:
-                point = generate_around_goal(self.space_side_length, self.num_dimensions, self.target_point)
+            if point_to_generate_around is not self.start_point and iteration < 5:
+                point = generate_around_goal(self.space_side_length - 1, self.num_dimensions, point_to_generate_around)
                 
             else:    
-                point = generate_random_point(self.space_side_length, self.num_dimensions)
+                point = generate_random_point(self.space_side_length - 1, self.num_dimensions)
                 
             print(point_count)
 
@@ -315,18 +326,25 @@ class RRT:
                 continue
 
             # Get new node coordinates by adding unit vector components to parent coordinates
-            new_point_coordinates = []
-            for i in range(len(d_list)):
-                new_point_coordinates.append(round(parent[1][i] + random_vector * (d_list[i] / vec_mag)))
-            
-            for i in new_point_coordinates:
-                if i < 0:
-                    continue
+            points_on_the_way = []
+            for n in range(20):
+                temp_point = []
+                for i in range(len(d_list)):
+                    temp_point.append(min(self.space_side_length - 1, round(parent[1][i] + n * (d_list[i] / vec_mag))))
+                points_on_the_way.append(temp_point)
                 
-            new_point = tuple(new_point_coordinates)
+            new_point = tuple(points_on_the_way[-1])
+            
+            is_invalid = False
+            for i in new_point:
+                if i < 0:
+                    is_invalid = True
+                    break
+            if is_invalid:
+                continue
 
             # If newly created node
-            if not self.is_valid(new_point):
+            if not self.is_valid(points_on_the_way):
                 colluded_points.append(new_point)
             else:
                 point_ok = True
@@ -335,9 +353,7 @@ class RRT:
         
         self.node_list.append([node_name, new_point, parent[0]])
         self.line_segments.append([parent[1], new_point])
-       
-        
-        
+        random.shuffle(self.weight_point_list)
         return new_point, colluded_points
 
     def nearest_node(self, point):
@@ -351,16 +367,16 @@ class RRT:
                 least_node = i
         return least_node
 
-    def is_valid(self, point):
-    
+    def is_valid(self, points):
         for i in self.collusion_dict:
             coordinates = (i[0],i[1])
             collusions = self.collusion_dict[i]
             
-            point_to_check = (point[coordinates[0]], point[coordinates[1]])
+            for point in points: 
+                point_to_check = (point[coordinates[0]], point[coordinates[1]])
             
-            if collusions[point_to_check] == True:
-                return False
+                if collusions[point_to_check] == True:
+                    return False
         
         return True
     
@@ -395,6 +411,28 @@ class RRT:
         print(self.longest_gen_time)
         print("Average node generation time was:")
         print(self.average_node_generation)
+        
+    def generate_weights(self):
+        for i in range(self.num_dimensions):
+            for n in range((i + 1), self.num_dimensions):
+                middle_point = []
+                for k in range(self.num_dimensions):
+                    if k == i or k == n:
+                        middle_point.append(self.space_side_length - 1)
+                    else:
+                        middle_point.append(self.space_side_length / 2)
+                self.weights[tuple(middle_point)] = 2
+                
+    def generate_weight_point_list(self):
+        for n in self.weights:
+            for k in range(self.weights[n]):
+                self.weight_point_list.append(n)
+        while self.total_weight is not len(self.weight_point_list):
+            self.weight_point_list.append(self.start_point)
+            
+        random.shuffle(self.weight_point_list)
+                    
+
 
 
 # Line properties
@@ -417,7 +455,7 @@ lines = []
 for i in range(line_amount):
     x, y = generate_curve(length_min, length_max, num_segments, min_num_stops, max_num_stops, x_bound, y_bound)
     lines.append((x,y))
-
+print(lines)
 # Robot variables
 radius = 10 # Radius of a circular robot
 num_robots = line_amount
