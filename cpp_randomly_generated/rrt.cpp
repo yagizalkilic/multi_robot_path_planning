@@ -153,6 +153,9 @@ bool RRT::generate_node(int point_count)
         double vec_mag = calculate_distance(point, parent.point);
         int random_vector = std::rand() % 10 + 1;
 
+        // Check if the generated points are out of bounds.
+        bool is_out_of_bounds = false;
+
         // Generate points between vector and parent.
         std::vector<Point> points_on_the_way;
         for (int n = 0; n < 20; ++n) 
@@ -161,29 +164,27 @@ bool RRT::generate_node(int point_count)
             temp_point.dimension = d_list.size();
             for (size_t i = 0; i < d_list.size(); ++i) 
             {
-                temp_point.coordinates.push_back(std::min(space_side_length - 1, (int)(parent.point.coordinates[i] + n * (d_list[i] / vec_mag))));
+                int temp_axis = std::min(space_side_length - 1, (int)(parent.point.coordinates[i] + n * (d_list[i] / vec_mag)));
+                if (temp_axis < 0 || temp_axis > space_side_length)
+                {
+                    is_out_of_bounds = true;
+                    break;
+                }
+                temp_point.coordinates.push_back(temp_axis);
+            }
+            if (is_out_of_bounds)
+            {
+                break;
             }
             points_on_the_way.push_back(temp_point);
+        }
+        if (is_out_of_bounds)
+        {
+            continue;
         }
 
         // Last generated point is the point of the new_node
         new_point = points_on_the_way.back();
-
-        // Check if the generated new point is out of bounds.
-        bool is_out_of_bounds = false;
-        for (int i : new_point.coordinates) 
-        {
-            if (i < 0 && i > space_side_length) 
-            {
-                is_out_of_bounds = true;
-                break;
-            }
-        }
-
-        if (is_out_of_bounds) 
-        {
-            continue;
-        }
 
         // Check if points between parent and new are restricted.
         if (is_valid(points_on_the_way)) 
