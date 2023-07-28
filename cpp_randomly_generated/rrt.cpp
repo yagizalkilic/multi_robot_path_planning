@@ -1,30 +1,30 @@
 #include "rrt.h"
 
 RRT::RRT(int num_dimensions, int space_side_length, 
-        std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash> dimension_pair_correspondance)
+         std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash> dimension_pair_correspondence)
 {
-    this -> num_dimensions = num_dimensions;
-    this -> space_side_length = space_side_length;
-    this -> dimension_pair_correspondance = dimension_pair_correspondance;
+    this->num_dimensions = num_dimensions;
+    this->space_side_length = space_side_length;
+    this->dimension_pair_correspondence = dimension_pair_correspondence;
 
     // Initialize start_point, target_point, first_node
     initialize_n_space();
 
     // To determine rrt runtime
-    this -> max_nodes = 10000;
-    this -> max_seconds = 300;
+    this->max_nodes = 30000;
+    this->max_seconds = 300;
 
     // Time tracking variables
-    this -> total_elapsed_time = 0;
-    this -> average_node_generation = 0.0;
-    this -> longest_gen_time = 0.0;
+    this->total_elapsed_time = std::chrono::duration<double>::zero();
+    this->average_node_generation = std::chrono::duration<double>::zero();
+    this->longest_gen_time = std::chrono::duration<double>::zero();
 
-    // Spread specification for generating around goal
-    this -> radius = 20;
+    // Spread specification for generating around the goal
+    this->radius = 20;
 
-    // Least distance required between last two nodes.
-    this -> final_distance = 10;
-    
+    // Least distance required between the last two nodes.
+    this->final_distance = 10;
+
     generate_tree();
     find_final_path();
 }
@@ -36,8 +36,8 @@ RRT::RRT(int num_dimensions, int space_side_length,
 void RRT::generate_tree() 
 {
     // Time tracking parameters
-    auto total_start_time = std::time(nullptr);
-    double total_node_gen_time = 0;
+    auto total_start_time = std::chrono::steady_clock::now();
+    std::chrono::duration<double> total_node_gen_time = std::chrono::duration<double>::zero();
 
     bool done = false;
     bool node_generation_possible = false;
@@ -45,15 +45,15 @@ void RRT::generate_tree()
 
     while (!done) 
     {
-        auto start_time = std::time(nullptr);
+        auto start_time = std::chrono::steady_clock::now();
 
         // Generate new node
         node_generation_possible = generate_node(point_count);
         point_count++;
 
-        auto end_time = std::time(nullptr);
+        auto end_time = std::chrono::steady_clock::now();
 
-        double elapsed_time = difftime(end_time, start_time);
+        std::chrono::duration<double> elapsed_time = end_time - start_time;
         total_node_gen_time += elapsed_time;
 
         if (elapsed_time > longest_gen_time) 
@@ -61,21 +61,21 @@ void RRT::generate_tree()
             longest_gen_time = elapsed_time;
         }
 
-        // We are done if path is complete, if max amount of nodes is traversed, if a certain
+        // We are done if the path is complete, if the max amount of nodes is traversed, if a certain
         // amount of time has passed since the start of tree generation, or if there is no new
         // node that can be successfully generated.
         if (is_done(node_list.back().point) || max_nodes < point_count || 
-                total_elapsed_time > max_seconds || !node_generation_possible) 
+            total_elapsed_time.count() > max_seconds || !node_generation_possible) 
         {
             done = true;
         }
     }
 
-    auto total_end_time = std::time(nullptr);
-    total_elapsed_time = difftime(total_end_time, total_start_time);
+    auto total_end_time = std::chrono::steady_clock::now();
+    total_elapsed_time = total_end_time - total_start_time;
     average_node_generation = total_node_gen_time / point_count;
 
-    // The final node is always: (space_side_length, ... , space_side_length)
+    // The final node is always: (space_side_length, ..., space_side_length)
     // This is true even if the path is incomplete.
     Node final_node;
     final_node.name = "q" + std::to_string(node_list.size());
@@ -149,7 +149,7 @@ bool RRT::generate_node(int point_count)
         // Get the difference between current point and parrent points every coordinate entry.
         auto d_list = get_distances(point, parent.point);
 
-        // GEnerate the random vector.
+        // Generate the random vector.
         double vec_mag = calculate_distance(point, parent.point);
         int random_vector = std::rand() % 10 + 1;
 
@@ -241,7 +241,7 @@ int RRT::nearest_node(const Point& point) const
  */
 bool RRT::is_valid(std::vector<Point> points)
 {
-    for (const auto& entry : dimension_pair_correspondance) 
+    for (const auto& entry : dimension_pair_correspondence) 
     {
         const auto& key = entry.first;  // This will give you a pair of integers
         const auto& inner_map = entry.second;  // This will give you the inner unordered map
@@ -288,8 +288,15 @@ void RRT::find_final_path()
  */
 void RRT::show_longest_generation() const 
 {
-    std::cout << "The longest node generation time was: " << longest_gen_time << std::endl;
-    std::cout << "Average node generation time was: " << average_node_generation << std::endl;
+    // Convert durations to seconds for easier display
+    double longest_gen_time_seconds = longest_gen_time.count();
+    double average_node_gen_seconds = average_node_generation.count();
+    double total_elapsed_seconds = total_elapsed_time.count();
+
+    std::cout << std::fixed << std::setprecision(3);
+    std::cout << "The longest node generation time was: " << longest_gen_time_seconds << " seconds" << std::endl;
+    std::cout << "Average node generation time was: " << average_node_gen_seconds << " seconds" << std::endl;
+    std::cout << "Total elapsed time during RRT generation was: " << total_elapsed_seconds << " seconds" << std::endl;
 }
 
 /**

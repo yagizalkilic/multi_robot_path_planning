@@ -8,6 +8,8 @@
 #include <random>
 #include <cmath>
 #include <ctime>
+#include <chrono>
+#include <iomanip>
 #include <limits.h>
 
 #include "project_utilities.h"
@@ -24,7 +26,7 @@
 class RRT {
 public:
     RRT(int num_dimensions, int space_side_length, 
-        std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash> dimension_pair_correspondance);
+        std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash> dimension_pair_correspondence);
 
     void generate_tree();
     bool is_done(const Point& point) const;
@@ -41,16 +43,11 @@ public:
         return path_nodes;
     }
 
-    // Getter for the longest generation time
-    double get_longest_generation_time() const {
-        return longest_gen_time;
-    }
-
 
 private:
     int num_dimensions;
     int space_side_length;
-    std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash> dimension_pair_correspondance;
+    std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash> dimension_pair_correspondence;
 
     Point start_point;
     Point target_point;
@@ -61,9 +58,9 @@ private:
     int max_nodes;
     int max_seconds;
 
-    int total_elapsed_time;
-    double average_node_generation;
-    double longest_gen_time;
+    std::chrono::duration<double> total_elapsed_time;
+    std::chrono::duration<double> average_node_generation;
+    std::chrono::duration<double> longest_gen_time;
 
     int radius;
     int final_distance;

@@ -26,16 +26,6 @@ int main(int argc, char *argv[])
     auto all_collisions_space = collision_space.get_collision_points();
     int collision_side_dimension_length = collision_space.get_side_dimension_length();
 
-
-    // Construct the RRT and determine the time path
-
-    std::cout << "Constructing the RRT..." << std::endl;
-
-    auto coordination_RRT = RRT(AGV_amount, collision_side_dimension_length, all_collisions_time);
-    coordination_RRT.show_longest_generation();
-    auto path = coordination_RRT.get_final_path();
-
-
     // Draw the collision space with paths, AGVs, and collisions
 
     std::cout << "Drawing collision space..." << std::endl;
@@ -127,6 +117,14 @@ int main(int argc, char *argv[])
     c1->Update();
     c1->GetFrame()->SetBorderSize(12);
     c1->Modified();
+
+    // Construct the RRT and determine the time path
+
+    std::cout << "Constructing the RRT..." << std::endl;
+
+    auto coordination_RRT = RRT(AGV_amount, collision_side_dimension_length, all_collisions_time);
+    coordination_RRT.show_longest_generation();
+    auto path = coordination_RRT.get_final_path();
 
     // Start drawing time canvas
 
