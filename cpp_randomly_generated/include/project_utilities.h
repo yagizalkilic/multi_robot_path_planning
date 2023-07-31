@@ -34,6 +34,7 @@ struct Node
     std::string name;
     Point point;
     std::string parent;
+    double cost = 0;
 };
 
 

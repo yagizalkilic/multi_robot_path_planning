@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add the main.cpp file to the project
-add_executable(PathFinding n_dimension_path_finding.cpp project_utilities.cpp project_utilities.h agv_collision_space.cpp agv_collision_space.h rrt.cpp rrt.h coordination_visualization.cpp coordination_visualization.h)
+add_executable(PathFinding src/main.cpp src/project_utilities.cpp include/project_utilities.h src/agv_collision_space.cpp include/agv_collision_space.h src/rrt.cpp include/rrt.h src/coordination_visualization.cpp include/coordination_visualization.h src/rrt_star include/rrt_star)
 
 if(DEFINED ENV{ROOTSYS})
   list(APPEND CMAKE_PREFIX_PATH $ENV{ROOTSYS})

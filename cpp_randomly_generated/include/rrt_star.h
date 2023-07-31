@@ -1,5 +1,5 @@
-#ifndef RRT_H
-#define RRT_H
+#ifndef RRT_STAR_H
+#define RRT_STAR_H
 
 #include <vector>
 #include <unordered_map>
@@ -23,9 +23,9 @@
  * maps every point on the zone to a boolean value that represents the
  * existence of a collision.
  */
-class RRT {
+class RRTStar {
 public:
-    RRT(int num_dimensions, int space_side_length, 
+    RRTStar(int num_dimensions, int space_side_length, 
         std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash> dimension_pair_correspondence);
 
     void generate_tree();
@@ -36,11 +36,21 @@ public:
     void find_final_path();
     void show_longest_generation() const;
     void initialize_n_space();
+    std::vector<int> find_nodes_within_radius(const Node& node, double radius) const;
+    void rewire_tree(const Node& new_node);
+    bool is_valid_path(const Point& point1, const Point& point2);
+    std::vector<int> find_k_nearest_nodes(const Node& node, int k) const;
 
     // Getter for the final path
     std::vector<Node> get_final_path() const 
     {
         return path_nodes;
+    }
+
+    // Getter for all nodes
+    std::vector<Node> get_all_nodes() const 
+    {
+        return node_list;
     }
 
 
@@ -67,4 +77,4 @@ private:
 
 };
 
-#endif // RRT_H
+#endif // RRT_STAR_H

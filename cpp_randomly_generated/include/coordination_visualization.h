@@ -31,10 +31,10 @@ public:
     CoordinationVisualization( int space_boundary_x, int space_boundary_y, int time_boundary );
 
     void draw_space(std::vector<std::vector<Point>>& all_paths, 
-        std::vector<std::pair<int, int>> all_collisions_space, int AGV_radius);
+        std::vector<std::pair<int, int>> all_collisions_space, int AGV_radius, char* canvas_name);
 
-    void draw_time(int AGV_amount, std::vector<Node> path, 
-        std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash>& all_collisions_time);
+    void draw_time(int AGV_amount, std::vector<Node> path, std::vector<Node> all_nodes,
+        std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash>& all_collisions_time, char* canvas_name);
 
 private:
     int space_boundary_x;

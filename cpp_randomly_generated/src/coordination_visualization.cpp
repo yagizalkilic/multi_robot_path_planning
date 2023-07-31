@@ -1,4 +1,4 @@
-#include "coordination_visualization.h"
+#include "../include/coordination_visualization.h"
 
 CoordinationVisualization::CoordinationVisualization(int space_boundary_x, int space_boundary_y, int time_boundary)
 {
@@ -8,11 +8,11 @@ CoordinationVisualization::CoordinationVisualization(int space_boundary_x, int s
 }
 
 void CoordinationVisualization::draw_space(std::vector<std::vector<Point>>& all_paths,
-	std::vector<std::pair<int, int>> all_collisions_space, int AGV_radius)
+	std::vector<std::pair<int, int>> all_collisions_space, int AGV_radius, char* canvas_name)
 {
     std::cout << "Drawing collision space..." << std::endl;
 
-    TCanvas* space_canvas = new TCanvas("space_canvas", "Graph Draw Options", 1000, 1000);
+    TCanvas* space_canvas = new TCanvas(canvas_name, canvas_name, 1000, 1000);
     space_canvas->SetGrid();
     space_canvas->cd();
     TMultiGraph *mg = new TMultiGraph();
@@ -94,15 +94,15 @@ void CoordinationVisualization::draw_space(std::vector<std::vector<Point>>& all_
     space_canvas->Modified();
 }
 
-void CoordinationVisualization::draw_time(int AGV_amount, std::vector<Node> path, 
-	std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash>& all_collisions_time)
+void CoordinationVisualization::draw_time(int AGV_amount, std::vector<Node> path, std::vector<Node> all_nodes,
+	std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash>& all_collisions_time, char* canvas_name)
 {
 	std::cout << "Drawing time space..." << std::endl;
 
-	TCanvas* time_canvas = new TCanvas("time_canvas", "Collisions", 1000 * AGV_amount, 1000 * AGV_amount);
+	TCanvas* time_canvas = new TCanvas(canvas_name, canvas_name, 1000 * AGV_amount, 1000 * AGV_amount);
 
     // Divide the canvas into segments that represent path pair
-    time_canvas->Divide(AGV_amount - 1, AGV_amount - 1, 0, 0);
+    time_canvas->Divide(AGV_amount - 1, AGV_amount - 1, 0.01, 0.01);
 
     int pad_amount = (AGV_amount - 1) * (AGV_amount - 1);
 
@@ -168,6 +168,26 @@ void CoordinationVisualization::draw_time(int AGV_amount, std::vector<Node> path
                     collisionGraph->SetMarkerColor(kWhite);
                 }
 
+                // Start creating the graph for tree expansions
+                std::vector<int> tree_expansion_x;
+                std::vector<int> tree_expansion_y;
+
+                int expansion_count = 0;
+
+                for( Node t : all_nodes)
+                {
+                    tree_expansion_x.push_back(t.point.coordinates[a]);
+                    tree_expansion_y.push_back(t.point.coordinates[i]);
+                    expansion_count++;
+                } 
+
+                TGraph *tree_expansion_graph = new TGraph(tree_expansion_x.size(), tree_expansion_x.data(), tree_expansion_y.data());
+                tree_expansion_graph->GetXaxis()->SetLimits(0, time_boundary); 
+                tree_expansion_graph->GetYaxis()->SetRangeUser(0, time_boundary); 
+                tree_expansion_graph->SetMarkerStyle(20);
+                tree_expansion_graph->SetMarkerSize(1);
+                tree_expansion_graph->SetMarkerColor(kGray);
+
                 // Start creating the graph for time path
                 std::vector<int> safe_path_x;
                 std::vector<int> safe_path_y;
@@ -186,15 +206,22 @@ void CoordinationVisualization::draw_time(int AGV_amount, std::vector<Node> path
                 safe_path_graph->GetYaxis()->SetRangeUser(0, time_boundary); 
                 safe_path_graph->SetMarkerStyle(20);
                 safe_path_graph->SetMarkerSize(1);
+                safe_path_graph->SetLineColor(kBlack);
+                safe_path_graph->SetMarkerColor(kBlack);
 
+                mg->Add(tree_expansion_graph, "P");
+                mg->Add(collisionGraph, "P");
+                mg->Add(safe_path_graph, "P");
 
-                mg->Add(collisionGraph);
-                mg->Add(safe_path_graph);
                 mg->SetTitle(title); 
                 mg->SetName(title); 
 
+                mg->GetXaxis()->SetTitle((std::string( "schedule " + std::to_string(a+1)) ).c_str());
+                mg->GetYaxis()->SetTitle((std::string( "schedule " + std::to_string(i+1)) ).c_str());
+
                 time_canvas->cd(cd_count);
-                mg->Draw("AP");
+                mg->Draw("APL");
+
                 cd_count++;   
 
             } 

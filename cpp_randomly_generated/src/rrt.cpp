@@ -1,4 +1,4 @@
-#include "rrt.h"
+#include "../include/rrt.h"
 
 RRT::RRT(int num_dimensions, int space_side_length, 
          std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash> dimension_pair_correspondence)
@@ -146,25 +146,30 @@ bool RRT::generate_node(int point_count)
             continue;
         }
 
-        // Get the difference between current point and parrent points every coordinate entry.
+        // Get the difference between current point's and parrent point's every coordinate entry.
         auto d_list = get_distances(point, parent.point);
 
         // Generate the random vector.
         double vec_mag = calculate_distance(point, parent.point);
-        int random_vector = std::rand() % 10 + 1;
+        int random_vector = std::rand() % 15 + 6;
 
         // Check if the generated points are out of bounds.
         bool is_out_of_bounds = false;
 
+        if (vec_mag < 1)
+        {
+            continue;
+        }
+
         // Generate points between vector and parent.
         std::vector<Point> points_on_the_way;
-        for (int n = 0; n < 20; ++n) 
+        for (int n = 0; n < random_vector; ++n) 
         {
             Point temp_point;
             temp_point.dimension = d_list.size();
             for (size_t i = 0; i < d_list.size(); ++i) 
             {
-                int temp_axis = std::min(space_side_length - 1, (int)(parent.point.coordinates[i] + n * (d_list[i] / vec_mag)));
+                int temp_axis = std::min(space_side_length - 1, (int)(parent.point.coordinates[i] + random_vector * (d_list[i] / vec_mag)));
                 if (temp_axis < 0 || temp_axis > space_side_length)
                 {
                     is_out_of_bounds = true;

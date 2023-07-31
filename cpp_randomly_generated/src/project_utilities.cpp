@@ -1,4 +1,4 @@
-#include "project_utilities.h"
+#include "../include/project_utilities.h"
 
 /**
  * Given two points on n dimensions, calculate the euclidian distance between them.

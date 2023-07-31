@@ -1,4 +1,4 @@
-#include "agv_collision_space.h" 
+#include "../include/agv_collision_space.h" 
 
 AGVCollisionSpace::AGVCollisionSpace( int x_bound, int y_bound, int AGV_amount, int AGV_radius, int path_min_stops, 
                                       int path_max_stops, int path_length_min, int path_length_max )
