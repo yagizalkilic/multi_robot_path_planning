@@ -10,6 +10,7 @@
 #include <cmath>
 #include <unordered_map>
 #include <stdexcept> 
+#include <algorithm>
 
 struct pair_hash 
 {

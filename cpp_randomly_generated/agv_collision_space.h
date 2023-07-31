@@ -1,5 +1,5 @@
-#ifndef AGVCOLLISIONSPACE_H
-#define AGVCOLLISIONSPACE_H
+#ifndef AGV_COLLISION_SPACE_H
+#define AGV_COLLISION_SPACE_H
 
 #include "project_utilities.h"
 #include <vector>
@@ -70,4 +70,4 @@ private:
 
 };
 
-#endif // AGVCOLLISIONSPACE_H
+#endif // AGV_COLLISION_SPACE_H
