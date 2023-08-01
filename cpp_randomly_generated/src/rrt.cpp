@@ -27,6 +27,7 @@ RRT::RRT(int num_dimensions, int space_side_length,
 
     generate_tree();
     find_final_path();
+
 }
 
 /**

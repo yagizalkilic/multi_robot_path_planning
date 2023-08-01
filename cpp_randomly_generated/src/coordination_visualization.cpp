@@ -211,7 +211,7 @@ void CoordinationVisualization::draw_time(int AGV_amount, std::vector<Node> path
 
                 mg->Add(tree_expansion_graph, "P");
                 mg->Add(collisionGraph, "P");
-                mg->Add(safe_path_graph, "P");
+                mg->Add(safe_path_graph, "PL");
 
                 mg->SetTitle(title); 
                 mg->SetName(title); 

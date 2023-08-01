@@ -81,6 +81,7 @@ void RRTStar::generate_tree()
     final_node.name = "q" + std::to_string(node_list.size());
     final_node.point = target_point;
     final_node.parent = node_list.back().name;
+    final_node.cost = node_list.back().cost + calculate_distance(node_list.back().point, target_point);
 
     node_list.push_back(final_node);
 }
@@ -220,20 +221,22 @@ bool RRTStar::generate_node(int point_count)
  *
  * @param new_node The newly added node in the tree.
  */
-void RRTStar::rewire_tree(const Node& new_node)
+void RRTStar::rewire_tree(Node& new_node)
 {
     // Find all nodes within a certain radius from the new_node
     std::vector<int> nearby_nodes = find_k_nearest_nodes(new_node, 20);
 
     // Update the parent of each nearby node if it improves the cost
-    for (int node_index = 0; node_index < nearby_nodes.size(); node_index++)
+    for (int node_index : nearby_nodes)
     {
         Node& nearby_node = node_list[node_index];
         // Calculate the cost to reach the nearby_node via the new_node
-        double cost_via_new_node = nearby_node.cost + calculate_distance(nearby_node.point, new_node.point);
+        double dist = calculate_distance(nearby_node.point, new_node.point);
+        double cost_via_new_node = new_node.cost + dist;
 
         // Update the parent if the new path is shorter
-        if (cost_via_new_node < nearby_node.cost && is_valid_path(nearby_node.point, new_node.point))
+        if (cost_via_new_node < nearby_node.cost && new_node.parent != nearby_node.name 
+             && new_node.name != nearby_node.name && is_valid_path(nearby_node.point, new_node.point) )
         {
             std::cout << "rewired" << std::endl;
             nearby_node.parent = new_node.name;
@@ -307,12 +310,8 @@ bool RRTStar::is_valid(std::vector<Point> points)
 bool RRTStar::is_valid_path(const Point& point1, const Point& point2) 
 {
     // Calculate the direction vector between the two points
-    std::vector<double> direction;
-    for (size_t i = 0; i < point1.coordinates.size(); ++i)
-    {
-        double diff = point2.coordinates[i] - point1.coordinates[i];
-        direction.push_back(diff);
-    }
+    std::vector<int> direction;
+    direction = get_distances(point2, point1);
 
     // Calculate the number of steps to divide the path into
     int num_steps = 20; // You can adjust this value for finer collision checking
@@ -325,7 +324,7 @@ bool RRTStar::is_valid_path(const Point& point1, const Point& point2)
         intermediate_point.dimension = point1.dimension;
         for (size_t i = 0; i < point1.coordinates.size(); ++i)
         {
-            double coord = point1.coordinates[i] + (step * direction[i] / num_steps);
+            int coord = (int)(point1.coordinates[i] + (step * direction[i] / num_steps));
             intermediate_point.coordinates.push_back(coord);
         }
         std::vector<Point> single_point;
@@ -351,13 +350,13 @@ void RRTStar::find_final_path()
     path_nodes.push_back(cur_node);
 
     // Iterate through all nodes in reverse order.
-    for (int i = static_cast<int>(node_list.size()); i >= 0; --i) 
+    for (int i = static_cast<int>(node_list.size()) - 1; i >= 0; --i)
     {
         if (node_list[i].name == cur_node.parent) 
         {
             path_nodes.insert(path_nodes.begin(), node_list[i]);
             cur_node = node_list[i];
-            static_cast<int>(node_list.size());
+            i = static_cast<int>(node_list.size()) - 1;
             continue;
         }
     }

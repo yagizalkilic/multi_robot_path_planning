@@ -37,7 +37,7 @@ public:
     void show_longest_generation() const;
     void initialize_n_space();
     std::vector<int> find_nodes_within_radius(const Node& node, double radius) const;
-    void rewire_tree(const Node& new_node);
+    void rewire_tree(Node& new_node);
     bool is_valid_path(const Point& point1, const Point& point2);
     std::vector<int> find_k_nearest_nodes(const Node& node, int k) const;
 

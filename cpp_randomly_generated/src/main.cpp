@@ -52,11 +52,6 @@ int main(int argc, char *argv[])
     auto path_RRT_star = coordination_RRT_star.get_final_path();
     auto all_nodes_RRT_star = coordination_RRT_star.get_all_nodes();
 
-    for (auto i : path_RRT_star)
-    {
-        std::cout << i.point.coordinates[0] << " " << i.point.coordinates[1] << std::endl;
-    }
-
     visualizer.draw_time(AGV_amount, path_RRT_star, all_nodes_RRT_star, all_collisions_time, "rrt_star_time_canvas");
 
     path_finding_app->Run();
