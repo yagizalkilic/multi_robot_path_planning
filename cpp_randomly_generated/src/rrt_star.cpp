@@ -165,7 +165,7 @@ bool RRTStar::generate_node(int point_count)
             temp_point.dimension = d_list.size();
             for (size_t i = 0; i < d_list.size(); ++i) 
             {
-                int temp_axis = std::min(space_side_length - 1, (int)(parent.point.coordinates[i] + random_vector * (d_list[i] / vec_mag)));
+                int temp_axis = std::min(space_side_length - 1, (int)(parent.point.coordinates[i] + n * (d_list[i] / vec_mag)));
                 if (temp_axis < 0 || temp_axis > space_side_length)
                 {
                     is_out_of_bounds = true;
@@ -224,7 +224,7 @@ bool RRTStar::generate_node(int point_count)
 void RRTStar::rewire_tree(Node& new_node)
 {
     // Find all nodes within a certain radius from the new_node
-    std::vector<int> nearby_nodes = find_k_nearest_nodes(new_node, 20);
+    std::vector<int> nearby_nodes = find_k_nearest_nodes(new_node, 30);
 
     // Update the parent of each nearby node if it improves the cost
     for (int node_index : nearby_nodes)
