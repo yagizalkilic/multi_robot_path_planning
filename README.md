@@ -15,6 +15,8 @@
   - turtle_follower: makes the turtles follow their paths in the given schedule.
 
     Turtle simulations output:
+    
+[turtlscheduling.webm](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/f6857c39-fddd-40ef-8f0a-5758d6dbf4c1)
 
     In order to execute the program, https://root.cern/ should be installed.
 
@@ -32,9 +34,9 @@
 
   - n_robot_coordination.py: calculates coordination graps for n robots. Cannot visualize in 3-D. Outputs:
 
- <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/96871533-5ca6-4a51-8b97-a4036a910dc2" width="380"/>
+     <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/96871533-5ca6-4a51-8b97-a4036a910dc2" width="380"/>
 
- <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/89da3c48-266d-4b97-a07f-436198a9f8bf" width="380"/>
+     <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/89da3c48-266d-4b97-a07f-436198a9f8bf" width="380"/>
 
 # Multi-Robot Path Planning on Predefined Routes
 
