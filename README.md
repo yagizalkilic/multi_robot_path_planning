@@ -14,11 +14,9 @@
 
   - turtle_follower: makes the turtles follow their paths in the given schedule.
 
-    Turtle simulations output:
+    Turtle simulations output: (In order to execute the program, https://root.cern/ should be installed.)
     
-[turtlscheduling.webm](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/f6857c39-fddd-40ef-8f0a-5758d6dbf4c1)
-
-    In order to execute the program, https://root.cern/ should be installed.
+[turtlscheduling.webm](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/f6857c39-fddd-40ef-8f0a-5758d6dbf4c1) 
 
 - The filed called py_tests contains scripts for the initial testing of the general methods:
   - simple_coordination_graph.py: simulates coordination graphs for 2 robots along a specified path.
