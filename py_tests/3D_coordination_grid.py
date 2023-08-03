@@ -301,13 +301,21 @@ class RRT:
         iteration = 0
         colluded_points = []
         while not point_ok:
-            point_to_generate_around = self.weight_point_list[point_count % self.weight_mod]
+            
+            # point_to_generate_around = self.weight_point_list[point_count % self.weight_mod]
+            # # Generate random coordinates
+            # if point_to_generate_around is not self.start_point and iteration < 5:
+            #     point = generate_around_goal(self.space_side_length - 1, self.num_dimensions, point_to_generate_around)
+                
+            # else:    
+            #     point = generate_random_point(self.space_side_length - 1, self.num_dimensions)
+            
             # Generate random coordinates
-            if point_to_generate_around is not self.start_point and iteration < 5:
-                point = generate_around_goal(self.space_side_length - 1, self.num_dimensions, point_to_generate_around)
+            if point_count % 4 == 2 and iteration < 5:
+                point = generate_around_goal(self.space_side_length, self.num_dimensions, self.target_point)
                 
             else:    
-                point = generate_random_point(self.space_side_length - 1, self.num_dimensions)
+                point = generate_random_point(self.space_side_length, self.num_dimensions)
                 
             print(point_count)
 
