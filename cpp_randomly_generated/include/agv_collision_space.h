@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <utility>
 #include <random>
+#include <boost/math/common_factor.hpp>
 
 /**
  * Space information needed to coordinate AGVs along paths.
@@ -67,6 +68,7 @@ private:
     std::vector<Point> generate_path();
     std::unordered_map<std::pair<int, int>, bool, pair_hash> find_collision_points(const std::vector<Point>& line1, const std::vector<Point>& line2);
     std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash> find_all_collisions();
+    bool is_colluded(int new_x, int new_y, int i);
 
 };
 

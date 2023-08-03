@@ -38,7 +38,7 @@ void AGVCollisionSpace::calculate_path_subdivision_amount()
     int num_stops = path_min_stops - 1;
     while (num_stops < path_max_stops)
     {
-        least_common_multiple = std::lcm(least_common_multiple, num_stops);
+        least_common_multiple = boost::math::lcm(least_common_multiple, num_stops);
         num_stops++;
     }
     while (least_common_multiple < 300)
@@ -104,9 +104,21 @@ std::vector<Point> AGVCollisionSpace::generate_path()
                 distance = hypot(stops_x[stop_amount - 1] - new_x, stops_y[stop_amount - 1] - new_y);
             }
         }
+
+        // Check if the path is impossible ( if the beginning or end point collides with another's beginning or end )
+        if ( i == 0 || i == num_stops - 1 )
+        {
+            if (is_colluded(new_x, new_y, i))
+            {
+                std::cout << "impossible" << new_x << " " << new_y << std::endl;
+                i--;
+                continue;
+            }
+        }
         
         stops_x.push_back(new_x);
         stops_y.push_back(new_y);
+
     }
 
     // Generate the path and gather the points on them
@@ -169,7 +181,8 @@ std::unordered_map<std::pair<int, int>, bool, pair_hash> AGVCollisionSpace::find
             int second = k;
 
             // If the calculate_distance is less than or equal to 2r, there is a collision
-            if (calculated_distance <= 2 * AGV_radius) {
+            if (calculated_distance <= 2 * AGV_radius) 
+            {
                 // Pass the segment position. The assumption here is that every
                 // segment is traversed in the same amount of time. Velocity
                 // should be included for more realistic values
@@ -207,3 +220,41 @@ std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, 
     return collision_dict;
 }
 
+/**
+ * Checks if two pats are impossible to execute
+ * 
+ * @param new_x x coordinate of the new beginning or end point
+ * @param new_y y coordinate of the new beginning or end point
+ * @param i determines whether this is a beginning or end point (0 if beginning, end otherwise)
+ * @return true if there is no possible solution
+ */
+bool AGVCollisionSpace::is_colluded(int new_x, int new_y, int i)
+{
+    Point new_point;
+    new_point.coordinates.push_back(new_x);
+    new_point.coordinates.push_back(new_y);
+    new_point.dimension = 2;
+
+    for ( auto path : paths )
+    {
+        Point point_to_compare;
+        if ( i == 0 )
+        {
+            point_to_compare = path.front();
+        }
+        else
+        {
+            point_to_compare = path.back();
+        }
+
+        // Calculate the calculate_distance between the points
+        double calculated_distance = calculate_distance(new_point, point_to_compare);
+
+        // If the calculate_distance is less than or equal to 2r, there is a collision
+        if (calculated_distance <= 2 * AGV_radius) 
+        {
+            return true;
+        } 
+    }
+    return false;
+}
