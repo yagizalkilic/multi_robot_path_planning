@@ -1,11 +1,20 @@
 ## Program information
 
-- The file called cpp_randomly_generated contains files to generate an n_dimensional robot space and find a solution to the scheduling problem. This implementation is still a test implementation as the generated data does not correspond to the actual robot data. However, RRT implementation and space representation will be used on the ros implementation. In order to execute the program, https://root.cern/ should be installed.
+- The multi_robot_path_scheduling catkin package contains 3 executables.
+
+  - algorithm_test: simulates paths and schedules robots.
+
+  - turtle_space_generator_scheduler:  generates turtles from turtlesim library, generates paths for the turtles, and calculates schedules for the paths.
+
+  - turtle_follower: makes the turtles follow their paths in the given schedule.
+
+    In order to execute the program, https://root.cern/ should be installed.
+
 - The filed called py_tests contains scripts for the initial testing of the general methods:
-  - simple_coordination_graph.py: simulates coordination graphs for 2 robots along a specified path
+  - simple_coordination_graph.py: simulates coordination graphs for 2 robots along a specified path.
   - 3D_coordination_euclidian.py: coordinates 3 robots on specified paths, visualizes the RRT algorithm. Uses euclidian distance to calculate proximity to collusion zones.
   - 3D_coordination_grid.py: coordinates 3 robots on specified paths, visualizes the RRT algorithm. Puts paths and collusions on a grid, is more efficient.
-  - n_robot_coordination.py: calculates coordination graps for n robots. Cannot visualize in 3-D
+  - n_robot_coordination.py: calculates coordination graps for n robots. Cannot visualize in 3-D.
 
 # Multi-Robot Path Planning on Predefined Routes
 
