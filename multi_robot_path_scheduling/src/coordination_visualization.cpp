@@ -12,7 +12,7 @@ void CoordinationVisualization::draw_space(std::vector<std::vector<Point>>& all_
 {
     std::cout << "Drawing collision space..." << std::endl;
 
-    TCanvas* space_canvas = new TCanvas(canvas_name, canvas_name, 1000, 1000);
+    TCanvas* space_canvas = new TCanvas(canvas_name, canvas_name, 800, 800);
     space_canvas->SetGrid();
     space_canvas->cd();
     TMultiGraph *mg = new TMultiGraph();
@@ -40,7 +40,7 @@ void CoordinationVisualization::draw_space(std::vector<std::vector<Point>>& all_
         // Create representations of AGVs
         TGraph *ellipseCenter = new TGraph(1, &x[0], &y[0]);
         ellipseCenter->SetMarkerStyle(24);
-        ellipseCenter->SetMarkerSize(AGV_radius * 2 * space_boundary_x / 1000);
+        ellipseCenter->SetMarkerSize(AGV_radius * 2 * space_boundary_x / 800);
         ellipseCenter->SetMarkerColor(colors[idx % numColors]);
         mg->Add(ellipseCenter, "P");
 
@@ -99,7 +99,7 @@ void CoordinationVisualization::draw_time(int AGV_amount, std::vector<Node> path
 {
 	std::cout << "Drawing time space..." << std::endl;
 
-	TCanvas* time_canvas = new TCanvas(canvas_name, canvas_name, 1000 * AGV_amount, 1000 * AGV_amount);
+	TCanvas* time_canvas = new TCanvas(canvas_name, canvas_name, 300 * AGV_amount, 220 * AGV_amount);
 
     // Divide the canvas into segments that represent path pair
     time_canvas->Divide(AGV_amount - 1, AGV_amount - 1, 0.01, 0.01);

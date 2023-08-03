@@ -15,6 +15,7 @@
 #include "TH1F.h"
 #include "TBrowser.h"
 #include "TFrame.h"
+#include "TImage.h"
 
 #include "project_utilities.h"
 
