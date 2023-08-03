@@ -4,8 +4,8 @@
 
   - algorithm_test: simulates paths and schedules robots. Outputs:
 
-    <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/d3c3a927-b917-4e97-a470-5a498c981845" width="400"/>
-    <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/019e803b-5189-4896-a160-2294538a6cae" width="400"/>
+    <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/d3c3a927-b917-4e97-a470-5a498c981845" width="380"/>
+    <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/019e803b-5189-4896-a160-2294538a6cae" width="380"/>
 <p align="center">
     <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/80b6c958-2956-4261-a044-5fd49ead435f" width="300"/>
 </p>
@@ -15,8 +15,6 @@
   - turtle_follower: makes the turtles follow their paths in the given schedule.
 
     Turtle simulations output:
-
-    https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/307f2df4-f957-4601-ae28-c46b07bdc135
 
     In order to execute the program, https://root.cern/ should be installed.
 
@@ -28,15 +26,15 @@
   - 3D_coordination_euclidian.py: coordinates 3 robots on specified paths, visualizes the RRT algorithm. Uses euclidian distance to calculate proximity to collusion zones. Outputs are similar to 3D_coordination_grid.py.
   - 3D_coordination_grid.py: coordinates 3 robots on specified paths, visualizes the RRT algorithm. Puts paths and collusions on a grid, is more efficient. Outputs:
     
-    <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/060c5317-dfb6-4dcf-afaf-83501409e57d" width="400"/>
+    <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/060c5317-dfb6-4dcf-afaf-83501409e57d" width="380"/>
  
-    <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/0a592802-b273-4412-97d8-7976b113698f" width="400"/>
+    <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/0a592802-b273-4412-97d8-7976b113698f" width="380"/>
 
   - n_robot_coordination.py: calculates coordination graps for n robots. Cannot visualize in 3-D. Outputs:
 
- <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/96871533-5ca6-4a51-8b97-a4036a910dc2" width="400"/>
+ <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/96871533-5ca6-4a51-8b97-a4036a910dc2" width="380"/>
 
- <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/89da3c48-266d-4b97-a07f-436198a9f8bf" width="400"/>
+ <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/89da3c48-266d-4b97-a07f-436198a9f8bf" width="380"/>
 
 # Multi-Robot Path Planning on Predefined Routes
 
