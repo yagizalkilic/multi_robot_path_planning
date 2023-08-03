@@ -31,8 +31,8 @@ A set of n robots travel along predefined paths. The purpose of this project is 
 - The file called py_tests contains scripts for the initial testing of the general methods:
   - simple_coordination_graph.py: simulates coordination graphs for 2 robots along a specified path.
       Outputs:
-    ![image](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/32ecfde7-d249-4c2c-9329-0e36902e4e85)
-    ![image](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/630dc372-e5c8-47d7-8627-eb7157506ccf)
+    <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/32ecfde7-d249-4c2c-9329-0e36902e4e85" width="380"/>
+    <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/630dc372-e5c8-47d7-8627-eb7157506ccf" width="380"/>
   - 3D_coordination_euclidian.py: coordinates 3 robots on specified paths, visualizes the RRT algorithm. Uses euclidian distance to calculate proximity to collusion zones. Outputs are similar to 3D_coordination_grid.py.
   - 3D_coordination_grid.py: coordinates 3 robots on specified paths, visualizes the RRT algorithm. Puts paths and collusions on a grid, is more efficient. Outputs:
     
