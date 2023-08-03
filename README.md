@@ -1,3 +1,13 @@
+# Multi-Robot Path Planning on Predefined Routes
+
+## Problem Definition
+
+A set of n robots travel along predefined paths. The purpose of this project is to coordinate these robots without any alteration to their paths, only changes that can be made are to robots' speeds. The project utilizes coordination graphs and RRT/RTT* algorithms to solve the problem. More information regarding the methodology is explained later.
+  
+<p align="center">
+    <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/314e429f-1588-4dc6-8e08-ffb3262d2d36" width="300"/>
+</p>
+
 ## Program information
 
 - The multi_robot_path_scheduling catkin package contains 3 executables.
@@ -18,7 +28,7 @@
     
 [turtlscheduling.webm](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/f6857c39-fddd-40ef-8f0a-5758d6dbf4c1) 
 
-- The filed called py_tests contains scripts for the initial testing of the general methods:
+- The file called py_tests contains scripts for the initial testing of the general methods:
   - simple_coordination_graph.py: simulates coordination graphs for 2 robots along a specified path.
       Outputs:
     ![image](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/32ecfde7-d249-4c2c-9329-0e36902e4e85)
@@ -36,22 +46,17 @@
 
      <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/89da3c48-266d-4b97-a07f-436198a9f8bf" width="380"/>
 
-# Multi-Robot Path Planning on Predefined Routes
+## Methodology
 
-# Problem Definition
+### Definitions
 
-A set of robots that are instructed to move along specified paths. The paths of the robots are subject to change in the event of an interruption during their movement.  A robot *N* is defined in the 2-D configuration space C such that:
+A set of robots that are instructed to move along specified paths. The paths of the robots are subject to change in the event of an interruption during their movement. A robot *N* is defined in the 2-D configuration space C such that:
 
 - Every robot follows a path _π_<sub>_n_</sub>. 
 
 - A path is a sequence of adjacent segments and each segment s<sub>i</sub> ∈ [0, _l_(π<sub>i</sub> )], where _l_(π<sub>i</sub> ) is the total length of the path.
 
 - Finally, the space occupied by a robot in configuration x<sub>i</sub> is represented as _A_(x<sub>i</sub> ).
-  
-
-![image-20230714101804226](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/314e429f-1588-4dc6-8e08-ffb3262d2d36)
-
-# Methodology
 
 ## Coordination Diagram
 
