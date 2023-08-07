@@ -14,9 +14,9 @@ A set of n robots travel along predefined paths. The purpose of this project is 
 
 - turtle_publisher:  generates turtles from turtlesim library, generates paths for the turtles, and calculates schedules for the paths.
 
-  - turtle_subscriber: makes the turtles follow their paths in the given schedule.
+- turtle_subscriber: makes the turtles follow their paths in the given schedule.
 
-  - algorithm_test: simulates paths and schedules robots.
+- algorithm_test: simulates paths and schedules robots.
 
 
     - Steps to run the turtle simulation:
