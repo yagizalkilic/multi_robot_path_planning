@@ -40,7 +40,7 @@ A set of n robots travel along predefined paths. The purpose of this project is 
 
 Turtle simulations output:
 
-[turtlscheduling.webm](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/f6857c39-fddd-40ef-8f0a-5758d6dbf4c1) 
+[turtle_scheduling.webm](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/27c78176-b886-4a27-8e2d-2c94476f77ac)
 
 - The file called py_tests contains scripts for the initial testing of the general methods:
   - simple_coordination_graph.py: simulates coordination graphs for 2 robots along a specified path.
