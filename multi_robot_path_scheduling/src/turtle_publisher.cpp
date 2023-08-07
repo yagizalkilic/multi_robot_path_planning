@@ -1,6 +1,7 @@
 #include <ros/ros.h>
 #include <nav_msgs/Path.h>
 #include <std_msgs/Int32MultiArray.h>
+#include <std_msgs/Int8.h>
 #include <turtlesim/Pose.h>
 #include <turtlesim/Spawn.h>
 #include <turtlesim/Kill.h>
@@ -10,6 +11,13 @@
 #include "../include/coordination_visualization.h"
 #include "../include/rrt_star.h"
 
+/**
+ * Generates publishers for each path.
+ *
+ * @param stored_paths all paths that were generated
+ * @param nh NodeHandle
+ * @return path_publishers a vector of Publisher objects
+ */
 std::vector<ros::Publisher> getPathPublishers(const std::vector<std::vector<Point>> stored_paths, ros::NodeHandle nh)
 {
     std::vector<ros::Publisher> path_publishers;
@@ -25,12 +33,20 @@ std::vector<ros::Publisher> getPathPublishers(const std::vector<std::vector<Poin
     return path_publishers;
 }
 
+/**
+ * Generates publishers for each schedule.
+ *
+ * @param pub_amt amount of schedule publishers to be generated
+ * @param nh NodeHandle
+ * @return schedule_publishers a vector of Publisher objects
+ */
 std::vector<ros::Publisher> getSchedulePublishers( int pub_amt, ros::NodeHandle nh)
 {
     std::vector<ros::Publisher> schedule_publishers;
     for ( int i = 0; i < pub_amt; i++ )
     {
-        std::string publisher_name = "schedule_" + std::to_string(i + 1);
+        std::string publisher_name;
+        publisher_name = "schedule_" + std::to_string(i + 1);
 
         ros::Publisher schedule_pub = nh.advertise<std_msgs::Int32MultiArray>(publisher_name, 10);
 
@@ -42,29 +58,67 @@ std::vector<ros::Publisher> getSchedulePublishers( int pub_amt, ros::NodeHandle 
     return schedule_publishers;
 }
 
+/**
+ * Converts path information into a publishable message.
+ *
+ * @param stored_path path to be converted
+ * @return path publishable message
+ */
 nav_msgs::Path convertPathToMsg(std::vector<Point> stored_path)
 {
-        nav_msgs::Path path;
-        path.header.stamp = ros::Time::now();
-        path.header.frame_id = "world";
+    nav_msgs::Path path;
+    path.header.stamp = ros::Time::now();
+    path.header.frame_id = "world";
 
-        for ( auto i : stored_path )
+    double old_x, old_y, old_z, old_w;
+
+    for ( int i = 0; i < stored_path.size() - 5; i++ )
+    {
+        double cur_x = (float)(stored_path[i].coordinates[0]) / 10.0;
+        double cur_y = (float)(stored_path[i].coordinates[1]) / 10.0;
+
+        double next_x = (float)(stored_path[i+5].coordinates[0]) / 10.0;
+        double next_y = (float)(stored_path[i+5].coordinates[1]) / 10.0;
+
+        if ( cur_x == next_x && cur_y == next_y )
         {
             geometry_msgs::PoseStamped pose;
-            pose.pose.position.x = (float)(i.coordinates[0]) / 10.0;
-            pose.pose.position.y = (float)(i.coordinates[1]) / 10.0;
-            pose.pose.position.z = 0.0;
-            pose.pose.orientation.x = 0.0;
-            pose.pose.orientation.y = 0.0;
-            pose.pose.orientation.z = 0.0;
-            pose.pose.orientation.w = 1.0;
+            pose.header.stamp = path.header.stamp;
+            pose.header.frame_id = path.header.frame_id;
+            pose.pose.position.x = cur_x;
+            pose.pose.position.y = cur_y;
+            pose.pose.orientation.w = old_w;
+
             path.poses.push_back(pose);
+            continue;
         }
+
+        // Determine the orientation of the turtle
+        double angle = atan2(next_y - cur_y, next_x - cur_x);
+
+        // Add the pose to the path
+        geometry_msgs::PoseStamped pose;
+        pose.header.stamp = path.header.stamp;
+        pose.header.frame_id = path.header.frame_id;
+        pose.pose.position.x = cur_x;
+        pose.pose.position.y = cur_y;
+
+        // Store the orientation in w. Since this is a 2d object no need for a quaternion.
+        pose.pose.orientation.w = angle;
+
+        old_w = angle;
+
+        path.poses.push_back(pose);
+    }
 
     return path;
 }
 
-// Function to publish turtles for each path
+/**
+ * Publish each turtle taking the beginning of their path as pose.
+ *
+ * @param stored_paths paths that turtles will be following
+ */
 void publishTurtlesForPaths(const std::vector<std::vector<Point>> stored_paths)
 {
     turtlesim::Pose turtle_pose;
@@ -76,9 +130,17 @@ void publishTurtlesForPaths(const std::vector<std::vector<Point>> stored_paths)
     {
         std::string turtle_name = "turtle_" + std::to_string(i + 1);
 
-        turtle_pose.x = (float)(stored_paths[i][0].coordinates[0]) / 10.0;
-        turtle_pose.y = (float)(stored_paths[i][0].coordinates[1]) / 10.0;
-        turtle_pose.theta = 1.0;
+        double cur_x = (float)(stored_paths[i][0].coordinates[0]) / 10.0;
+        double cur_y = (float)(stored_paths[i][0].coordinates[1]) / 10.0;
+
+        double next_x = (float)(stored_paths[i][1].coordinates[0]) / 10.0;
+        double next_y = (float)(stored_paths[i][1].coordinates[1]) / 10.0;
+
+        double angle = atan2(next_y - cur_y, next_x - cur_x);
+
+        turtle_pose.x = cur_x;
+        turtle_pose.y = cur_y;
+        turtle_pose.theta = angle;
 
         turtlesim::Spawn spawn;
         spawn.request.x = turtle_pose.x;
@@ -89,6 +151,14 @@ void publishTurtlesForPaths(const std::vector<std::vector<Point>> stored_paths)
     }
 }
 
+/**
+ * Given the path (time representation), looks at current movements of all robots;
+ * and if a robot is slower than the fastest robot, fills the remaining schedule of
+ * the slower robot with zeros.
+ *
+ * @param path schedule that the robots will follow
+ * @return schedule_msgs schedule of each robot
+ */
 std::vector<std_msgs::Int32MultiArray> calculateSchedule(std::vector<Node> path)
 {
     Point current_point = path.front().point;
@@ -123,7 +193,6 @@ std::vector<std_msgs::Int32MultiArray> calculateSchedule(std::vector<Node> path)
             }
         }
     }
-
     std::vector<std_msgs::Int32MultiArray> schedule_msgs;
 
     // Convert schedules to a flat array in schedule_msg
@@ -166,20 +235,6 @@ int main(int argc, char** argv)
     auto all_collisions_space = collision_space.get_collision_points();
     int collision_side_dimension_length = collision_space.get_side_dimension_length();
 
-    ros::init(argc, argv, "random_path_generator");
-    ros::NodeHandle nh;
-
-    ros::ServiceClient client = nh.serviceClient<turtlesim::Kill>("/kill");
-
-    turtlesim::Kill srv;
-    srv.request.name = "turtle1"; // Replace "turtle1" with the name of the turtle you want to kill.
-
-    client.call(srv);
-
-    publishTurtlesForPaths(all_paths);
-
-    std::vector<ros::Publisher> path_publishers = getPathPublishers(all_paths, nh);
-
     // Initialize visualizer, plot collision space
     auto visualizer = CoordinationVisualization(x_bound, y_bound, collision_side_dimension_length);
 
@@ -205,13 +260,35 @@ int main(int argc, char** argv)
 
     visualizer.draw_time(AGV_amount, path_RRT_star, all_nodes_RRT_star, all_collisions_time, "rrt_star_time_canvas");
 
+    // Start ros operations
+    ros::init(argc, argv, "turtle_publisher");
+    ros::NodeHandle nh;
+
+    ros::ServiceClient client = nh.serviceClient<turtlesim::Kill>("/kill");
+
+    // Kill the default turtle
+    turtlesim::Kill srv;
+    srv.request.name = "turtle1";
+
+    client.call(srv);
+
+    publishTurtlesForPaths(all_paths);
+
+    std::vector<ros::Publisher> path_publishers = getPathPublishers(all_paths, nh);
+
     auto schedule_msgs = calculateSchedule(path_RRT);
     auto schedule_publishers = getSchedulePublishers(schedule_msgs.size(), nh);
+
+    // Publish robot amount
+    ros::Publisher robot_amount_pub = nh.advertise<std_msgs::Int8>("AGV_amount", 10);
+    std_msgs::Int8 robot_amount;
+    robot_amount.data = AGV_amount;
 
     ros::Rate rate(1); // Publish rate in Hz, adjust as needed
 
     while (ros::ok())
     {
+        robot_amount_pub.publish(robot_amount);
         for ( int i = 0; i < path_publishers.size(); i++ )
         {
             path_publishers[i].publish(convertPathToMsg(all_paths[i]));
@@ -219,7 +296,15 @@ int main(int argc, char** argv)
 
         for ( int i = 0; i < schedule_publishers.size(); i++ )
         {
-            schedule_publishers[i].publish(schedule_msgs[i]);
+
+            if ( i != schedule_publishers.size() - 1)
+            {
+                schedule_publishers[i].publish(schedule_msgs[i]);
+            }
+            else
+            {
+                schedule_publishers[i].publish(schedule_msgs[i]);
+            }
         }
 
         ros::spinOnce();

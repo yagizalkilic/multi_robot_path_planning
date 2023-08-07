@@ -195,7 +195,7 @@ class RRT:
         self.longest_node_generated = None
         self.longest_gen_time = 0
         
-        self.max_nodes = 5000
+        self.max_nodes = 10000
         
         self.generate_tree()
         

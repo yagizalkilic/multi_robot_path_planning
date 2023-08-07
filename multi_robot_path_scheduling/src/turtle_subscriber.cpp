@@ -1,16 +1,28 @@
 #include <ros/ros.h>
 #include <nav_msgs/Path.h>
 #include <std_msgs/Int32MultiArray.h>
+#include <std_msgs/Int8.h>
 #include <turtlesim/TeleportAbsolute.h>
 #include <string>
 #include <vector>
 #include <thread>
 
-// Global variables to store the latest paths received
+// Global variables to store the subscribed data
 std::vector<nav_msgs::Path> received_paths;
 std::vector<std_msgs::Int32MultiArray> received_schedules;
+std_msgs::Int8 received_amount;
 
-// Function to move a turtle along a given path
+bool initialization_complete = false;
+
+/**
+ * Teleports the turtles on the given path.
+ *
+ * @param nh NodeHandle
+ * @param path physical path to follow
+ * @param schedule schedule to follow the path
+ * @param turtle_name id of the turtle
+ * @return true if path traversing is completed
+ */
 bool moveTurtleAlongPath(ros::NodeHandle& nh, const nav_msgs::Path& path, const std_msgs::Int32MultiArray& schedule, const std::string& turtle_name)
 {
     ros::ServiceClient teleport_client = nh.serviceClient<turtlesim::TeleportAbsolute>("/" + turtle_name + "/teleport_absolute");
@@ -21,10 +33,9 @@ bool moveTurtleAlongPath(ros::NodeHandle& nh, const nav_msgs::Path& path, const 
         auto& pose_stamped = path.poses[schedule.data[i]];
         teleport_srv.request.x = pose_stamped.pose.position.x;
         teleport_srv.request.y = pose_stamped.pose.position.y;
-        teleport_srv.request.theta = atan2(2.0 * (pose_stamped.pose.orientation.w * pose_stamped.pose.orientation.z),
-                                           1.0 - 2.0 * (pose_stamped.pose.orientation.z * pose_stamped.pose.orientation.z));
+        teleport_srv.request.theta = pose_stamped.pose.orientation.w;
 
-        if (i == schedule.data.size() - 1 || pose_stamped.pose.position.x == 0.0 && pose_stamped.pose.position.y == 0.0)
+        if (i == schedule.data.size() - 1 || pose_stamped.pose.position.x == 0.0 || pose_stamped.pose.position.y == 0.0)
         {
             ROS_INFO("Turtle %s reached the last coordinate, stopping.", turtle_name.c_str());
             return true;
@@ -49,7 +60,14 @@ bool moveTurtleAlongPath(ros::NodeHandle& nh, const nav_msgs::Path& path, const 
     }
 }
 
-// Thread function for each turtle
+/**
+ * Run each turtle on a thread.
+ *
+ * @param nh NodeHandle
+ * @param turtle_index position of turtle in turtle_list
+ * @param turtle_name id of the turtle
+ * @return true if path traversing is completed
+ */
 void turtleThread(ros::NodeHandle& nh, int turtle_index, const std::string& turtle_name)
 {
     while (ros::ok())
@@ -69,32 +87,62 @@ void turtleThread(ros::NodeHandle& nh, int turtle_index, const std::string& turt
     }
 }
 
+/**
+ * Callback to subscribe to AGV_amount
+ *
+ * @param amt_msg message containing AGV amount info
+ */
+void AGV_amount_callback(const std_msgs::Int8::ConstPtr& amt_msg)
+{
+    received_amount.data = amt_msg->data;
+}
+
+
 int main(int argc, char** argv)
 {
-    ros::init(argc, argv, "turtle_follower_node");
+    ros::init(argc, argv, "turtle_teleporter_node");
     ros::NodeHandle nh;
 
-    // Specify the turtle names for each path (Make sure you have spawned turtles with these names)
-    std::vector<std::string> turtle_names = {"turtle_1", "turtle_2", "turtle_3", "turtle_4"}; // Adjust the names as needed
+    received_amount.data = 0;
+
+    // Subscribe to the published AGV_amount
+    std::string amount_subscriber_name = "AGV_amount";
+    ros::Subscriber amount_sub = nh.subscribe(amount_subscriber_name, 10, &AGV_amount_callback);
+
+    ros::Rate rate(1);
+
+    // Wait until the initialization is complete (received_amount is greater than zero and the flag is set)
+    while (ros::ok() && !initialization_complete) 
+    {
+        if(received_amount.data != 0)
+        {
+            initialization_complete = true;
+        }
+        ros::spinOnce();
+        rate.sleep();
+    }
 
     // Initialize the vector to store paths
-    received_paths.resize(turtle_names.size());
-    received_schedules.resize(turtle_names.size());
+    received_paths.resize(received_amount.data);
+    received_schedules.resize(received_amount.data);
 
-    // Subscribe to the published paths
+    // Create a vector to store subscribers for the published paths
     std::vector<ros::Subscriber> path_subscribers;
 
-    // Subscribe to the published schedules
+    // Create a vector to store subscribers for the published schedules
     std::vector<ros::Subscriber> schedule_subscribers;
 
-    for (size_t i = 0; i < turtle_names.size(); i++)
+    for (size_t i = 0; i < received_amount.data; i++)
     {
+        // Subscribe to each path
+        std::string turtle_name = "turtle_" + std::to_string(i + 1);
         std::string subscriber_name = "path_" + std::to_string(i + 1);
         ros::Subscriber path_subscriber = nh.subscribe<nav_msgs::Path>(subscriber_name, 1, [i](const nav_msgs::Path::ConstPtr& msg) {
             received_paths[i] = *msg;
         });
         path_subscribers.push_back(path_subscriber);
 
+        //Subscribe to each schedule
         std::string schedule_name = "schedule_" + std::to_string(i + 1);
         ros::Subscriber schedule_subscriber = nh.subscribe<std_msgs::Int32MultiArray>(schedule_name, 1, [i](const std_msgs::Int32MultiArray::ConstPtr& msg) {
             received_schedules[i] = *msg;
@@ -102,12 +150,16 @@ int main(int argc, char** argv)
         schedule_subscribers.push_back(schedule_subscriber);
 
         // Start a thread for each turtle
-        std::thread turtle_thread(turtleThread, std::ref(nh), i, turtle_names[i]);
+        std::thread turtle_thread(turtleThread, std::ref(nh), i, turtle_name);
         turtle_thread.detach();
     }
 
-    // Main loop
-    ros::spin();
+    // Main thread for ros operations if needed
+    while (ros::ok())
+    {
+        ros::spinOnce();
+        rate.sleep();
+    }
 
     return 0;
 }

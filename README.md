@@ -3,16 +3,33 @@
 ## Problem Definition
 
 A set of n robots travel along predefined paths. The purpose of this project is to coordinate these robots without any alteration to their paths, only changes that can be made are to robots' speeds. The project utilizes coordination graphs and RRT/RTT* algorithms to solve the problem. More information regarding the methodology is explained later.
-  
+
 <p align="center">
     <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/314e429f-1588-4dc6-8e08-ffb3262d2d36" width="300"/>
 </p>
 
 ## Program information
 
-- The multi_robot_path_scheduling catkin package contains 3 executables.
+- The multi_robot_path_scheduling catkin package contains 3 executables. (In order to execute the program, https://root.cern/ should be installed.)
 
-  - algorithm_test: simulates paths and schedules robots. Outputs:
+- turtle_publisher:  generates turtles from turtlesim library, generates paths for the turtles, and calculates schedules for the paths.
+
+  - turtle_subscriber: makes the turtles follow their paths in the given schedule.
+
+  - algorithm_test: simulates paths and schedules robots.
+
+
+    - Steps to run the turtle simulation:
+
+      - In a new terminal run: roscore
+      - In a new terminal run: rosrun turtlesim turtlesim_node 
+      - In a new terminal (source your workspace if not sourced) run: rosrun multi_robot_path_scheduling turtle_publisher 
+      - In a new terminal (source your workspace if not sourced) run: rosrun multi_robot_path_scheduling turtle_subscriber
+    - If you wish to only run the RRT, RRT* and see the outputs:
+
+      - In a new terminal (source your workspace if not sourced) run: rosrun multi_robot_path_scheduling algorithm_test 
+
+    Algorithm test outputs:
 
     <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/d3c3a927-b917-4e97-a470-5a498c981845" width="380"/>
     <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/019e803b-5189-4896-a160-2294538a6cae" width="380"/>
@@ -20,12 +37,9 @@ A set of n robots travel along predefined paths. The purpose of this project is 
     <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/80b6c958-2956-4261-a044-5fd49ead435f" width="300"/>
 </p>
 
-  - turtle_space_generator_scheduler:  generates turtles from turtlesim library, generates paths for the turtles, and calculates schedules for the paths.
 
-  - turtle_follower: makes the turtles follow their paths in the given schedule.
+Turtle simulations output:
 
-    Turtle simulations output: (In order to execute the program, https://root.cern/ should be installed.)
-    
 [turtlscheduling.webm](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/f6857c39-fddd-40ef-8f0a-5758d6dbf4c1) 
 
 - The file called py_tests contains scripts for the initial testing of the general methods:
@@ -37,7 +51,7 @@ A set of n robots travel along predefined paths. The purpose of this project is 
   - 3D_coordination_grid.py: coordinates 3 robots on specified paths, visualizes the RRT algorithm. Puts paths and collusions on a grid, is more efficient. Outputs:
     
     <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/060c5317-dfb6-4dcf-afaf-83501409e57d" width="380"/>
- 
+
     <img src="https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/0a592802-b273-4412-97d8-7976b113698f" width="380"/>
 
   - n_robot_coordination.py: calculates coordination graps for n robots. Cannot visualize in 3-D. Outputs:
