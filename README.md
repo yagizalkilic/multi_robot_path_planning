@@ -18,8 +18,12 @@ A set of n robots travel along predefined paths. The purpose of this project is 
 
 - algorithm_test: simulates paths and schedules robots.
 
+- turtle_teleporter_publisher:  generates turtles from turtlesim library, generates paths for the turtles, and calculates schedules for the paths.
 
-    - Steps to run the turtle simulation:
+- turtle_teleporter_subscriber: makes the turtles follow their paths in the given schedule, teleports the turtles using turtlesim teleport service.
+
+
+    - Steps to run the turtle simulation(if you wish to run teleporter use turtle_teleporter_publisher and turtle_teleporter_subscriber instead):
 
       - In a new terminal run: roscore
       - In a new terminal run: rosrun turtlesim turtlesim_node 
@@ -39,6 +43,10 @@ A set of n robots travel along predefined paths. The purpose of this project is 
 
 
 Turtle simulations output:
+
+[velocity_schedules.webm](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/2fa8c5a9-0194-4bc6-ad7d-8348aee34e61)
+
+Turtle teleporter simulations output:
 
 [turtle_scheduling.webm](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/27c78176-b886-4a27-8e2d-2c94476f77ac)
 
