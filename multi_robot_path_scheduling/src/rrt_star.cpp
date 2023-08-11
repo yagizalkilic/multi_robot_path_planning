@@ -84,6 +84,7 @@ void RRTStar::generate_tree()
     final_node.cost = node_list.back().cost + calculate_distance(node_list.back().point, target_point);
 
     node_list.push_back(final_node);
+    std::cout << std::endl;;
 }
 
 /**
@@ -136,7 +137,7 @@ bool RRTStar::generate_node(int point_count)
         }
 
         // Print current node count to the terminal for debugging.
-        std::cout << point_count << std::endl;
+        std::cout << point_count << ", ";
 
         // Find the nearest node to the randomly generated node
         parent = node_list[nearest_node(point)];
@@ -238,7 +239,7 @@ void RRTStar::rewire_tree(Node& new_node)
         if (cost_via_new_node < nearby_node.cost && new_node.parent != nearby_node.name 
              && new_node.name != nearby_node.name && is_valid_path(nearby_node.point, new_node.point) )
         {
-            std::cout << "rewired" << std::endl;
+            std::cout << "rewired" << " -- ";
             nearby_node.parent = new_node.name;
             nearby_node.cost = cost_via_new_node;
         }

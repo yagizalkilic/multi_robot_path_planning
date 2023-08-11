@@ -2,11 +2,6 @@
 #define AGV_COLLISION_SPACE_H
 
 #include "project_utilities.h"
-#include <vector>
-#include <unordered_map>
-#include <utility>
-#include <random>
-#include <boost/math/common_factor.hpp>
 
 /**
  * Space information needed to coordinate AGVs along paths.

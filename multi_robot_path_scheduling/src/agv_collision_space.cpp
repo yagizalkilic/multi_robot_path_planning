@@ -88,8 +88,8 @@ std::vector<Point> AGVCollisionSpace::generate_path()
     for (int i = 0; i < num_stops; i++) 
     {
         stop_amount = stops_x.size();
-        std::uniform_real_distribution<> x_dist(0, x_bound);
-        std::uniform_real_distribution<> y_dist(0, y_bound);
+        std::uniform_real_distribution<> x_dist(x_bound / 10, x_bound * 9 / 10);
+        std::uniform_real_distribution<> y_dist(y_bound / 10, y_bound * 9 / 10);
 
         double new_x = x_dist(gen);
         double new_y = y_dist(gen);
@@ -110,7 +110,7 @@ std::vector<Point> AGVCollisionSpace::generate_path()
         {
             if (is_colluded(new_x, new_y, i))
             {
-                std::cout << "impossible" << new_x << " " << new_y << std::endl;
+                std::cout << "impossible path generation at: " << new_x << ", " << new_y << std::endl;
                 i--;
                 continue;
             }
@@ -143,6 +143,7 @@ std::vector<Point> AGVCollisionSpace::generate_path()
             points.push_back(point);
         }
     }
+    points.push_back(points.back());
 
     return points;
 }
@@ -251,7 +252,7 @@ bool AGVCollisionSpace::is_colluded(int new_x, int new_y, int i)
         double calculated_distance = calculate_distance(new_point, point_to_compare);
 
         // If the calculate_distance is less than or equal to 2r, there is a collision
-        if (calculated_distance <= 2 * AGV_radius) 
+        if (calculated_distance <= 3 * AGV_radius) 
         {
             return true;
         } 

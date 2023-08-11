@@ -8,16 +8,22 @@
  * @return distance between points
  */
 double calculate_distance(const Point& p1, const Point& p2) {
-    if (p1.dimension != p2.dimension) {
+    if (p1.dimension != p2.dimension) 
+    {
         // Handle the case when points have different dimensions
         throw std::runtime_error("Points have different dimensions");
     }
+    if(p1.coordinates == p2.coordinates)
+    {
+        return 0.0;
+    }
 
     int dimension = p1.dimension;
-    int sum = 0;
+    double sum = 0.0;
 
-    for (int i = 0; i < dimension; ++i) {
-        int diff = p1.coordinates[i] - p2.coordinates[i];
+    for (int i = 0; i < dimension; ++i) 
+    {
+        double diff = p1.coordinates[i] - p2.coordinates[i];
         sum += diff * diff;
     }
 
@@ -130,4 +136,159 @@ std::vector<int> get_distances(Point point1, Point point2)
         distances.push_back(point1.coordinates[i] - point2.coordinates[i]);
     }
     return distances;
+}
+
+
+/**
+ * Gets unique integers within a specified index interval of a vector<int>.
+ *
+ * @param num_list number list to search within
+ * @param startIndex Starting index of the interval
+ * @param endIndex Ending index of the interval
+ * @return vector containing unique numbers
+ */
+ std::vector<int> get_unique_numbers(std::vector<int> num_list, int start_index, int end_index) 
+ {
+    std::vector<int> unique_numbers;
+
+    for (int i = start_index; i <= end_index && i < num_list.size(); i++) 
+    {
+        if (std::find(unique_numbers.begin(), unique_numbers.end(), num_list[i]) == unique_numbers.end())
+        {
+            unique_numbers.push_back(num_list[i]);
+        }
+    }
+
+    return unique_numbers;
+}
+
+/**
+ * Compares neighbours and includes the item only if it is different from its neighbours.
+ * Ex: 2 4 5 5 6 9 2 10 10 10 2 3 4 3 3 returns 2 4 5 6 9 2 10 2 3 4 3
+ *
+ * @param num_list number list to search within
+ * @param startIndex Starting index of the interval
+ * @param endIndex Ending index of the interval
+ * @return vector containing neighbour-unique items
+ */
+ std::vector<int> get_unique_neighbours(std::vector<int> num_list, int start_index, int end_index) 
+ {
+    std::vector<int> unique_neighbours;
+
+    for (int i = start_index; i <= end_index && i < num_list.size(); i++) 
+    {
+        if ( i == start_index )
+        {
+            unique_neighbours.push_back(num_list[i]);
+        }
+        else
+        {
+            if ( num_list[i-1] != num_list[i] )
+            {
+                unique_neighbours.push_back(num_list[i]);
+            }
+        }
+    }
+
+    return unique_neighbours;
+}
+
+/**
+ * Returns the vector without the specified number
+ *
+ * @param num_list number list to search within
+ * @param number to exclude
+ * @return vector without the number
+ */
+ std::vector<int> exclude_number(std::vector<int> num_list, int number, int start_index, int end_index)
+ {
+    std::vector<int> excluded_list;
+
+    for (int i = start_index; i <= end_index && i < num_list.size(); i++) 
+    {
+        if ( num_list[i] != number )
+        {
+            excluded_list.push_back(num_list[i]);
+        }
+    }
+
+    return excluded_list;
+}
+
+
+/**
+ * Calculates the total distance between adjacent points within a specified index interval of a nav_msgs::Path.
+ *
+ * @param path nav_msgs::Path to calculate distances from
+ * @param first_index Starting index of the interval (inclusive)
+ * @param last_index Ending index of the interval (inclusive)
+ * @return Total distance between adjacent points in the interval
+ */
+double calculate_total_distance(std::vector<Point> physical_path, int first_index, int last_index) 
+{
+    double totalDistance = 0.0;
+
+    for ( int i = first_index; i < last_index; i++)
+    {
+        Point currentPoint;
+        currentPoint.coordinates.push_back((physical_path[i].coordinates[0]) * 10.0);
+        currentPoint.coordinates.push_back((physical_path[i].coordinates[1]) * 10.0);
+
+        Point nextPoint;
+        nextPoint.coordinates.push_back((physical_path[i+1].coordinates[0]) * 10.0);
+        nextPoint.coordinates.push_back((physical_path[i+1].coordinates[1]) * 10.0);
+
+        totalDistance += calculate_distance(currentPoint, nextPoint);
+    }
+    return totalDistance / 10.0;
+}
+
+/**
+ * Calculates the orientation a robot must have to go from point 1 to point 2.
+ *
+ * @param point1 start point
+ * @param point2 end point
+ * @return orientation
+ */
+double calculate_orientation(Point point1, Point point2)
+{
+    double angle;
+
+    double cur_x = (float)(point1.coordinates[0]) / 10.0;
+    double cur_y = (float)(point1.coordinates[1]) / 10.0;
+
+    double next_x = (float)(point2.coordinates[0]) / 10.0;
+    double next_y = (float)(point2.coordinates[1]) / 10.0;
+
+    // Determine the orientation of the robot
+    angle = atan2(next_y - cur_y, next_x - cur_x);
+
+    return angle;
+}
+
+/**
+ * Calculates the angular velocity given ending and beginning orientations and travel duration.
+ *
+ * @param orientation_begin start orientation
+ * @param orientation_end end orientation
+ * @param duration travel duration
+ * @return angular_velocity
+ */
+double calculate_angular_velocity(double orientation_begin, double orientation_end, double duration) 
+{
+    if ( duration < 0.0001 )
+    {
+        return 0.0;
+    }
+    double delta_theta = orientation_end - orientation_begin;
+
+    if (fabs(delta_theta) < 0.0001) 
+    {
+        return 0.0;
+    }
+
+    // Calculate angular velocity
+    double angular_velocity = delta_theta / duration;
+
+    return angular_velocity;
 }

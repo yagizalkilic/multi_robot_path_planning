@@ -40,7 +40,7 @@ void CoordinationVisualization::draw_space(std::vector<std::vector<Point>>& all_
         // Create representations of AGVs
         TGraph *ellipseCenter = new TGraph(1, &x[0], &y[0]);
         ellipseCenter->SetMarkerStyle(24);
-        ellipseCenter->SetMarkerSize(AGV_radius * 2 * space_boundary_x / 800);
+        ellipseCenter->SetMarkerSize(AGV_radius * 2 * space_boundary_x / 200);
         ellipseCenter->SetMarkerColor(colors[idx % numColors]);
         mg->Add(ellipseCenter, "P");
 
@@ -89,9 +89,10 @@ void CoordinationVisualization::draw_space(std::vector<std::vector<Point>>& all_
     // Draw all graphs together, first canvas is done.
     mg->Draw("APL");
 
-    space_canvas->Update();
     space_canvas->GetFrame()->SetBorderSize(12);
     space_canvas->Modified();
+    space_canvas->Update();
+
 }
 
 void CoordinationVisualization::draw_time(int AGV_amount, std::vector<Node> path, std::vector<Node> all_nodes,
@@ -236,7 +237,8 @@ void CoordinationVisualization::draw_time(int AGV_amount, std::vector<Node> path
     }
 
     // Display second canvas
-    time_canvas->Update();
     time_canvas->GetFrame()->SetBorderSize(12);
     time_canvas->Modified();
+    time_canvas->Update();
+
 }
