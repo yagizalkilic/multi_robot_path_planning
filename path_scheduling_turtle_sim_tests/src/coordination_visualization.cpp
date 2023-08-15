@@ -7,7 +7,7 @@ CoordinationVisualization::CoordinationVisualization(int space_boundary_x, int s
     this->time_boundary = time_boundary;
 }
 
-void CoordinationVisualization::draw_space(std::vector<std::vector<Point>>& all_paths,
+void CoordinationVisualization::draw_space(std::vector<PhysicalPath>& all_paths,
 	std::vector<std::pair<int, int>> all_collisions_space, int AGV_radius, char* canvas_name)
 {
     std::cout << "Drawing collision space..." << std::endl;
@@ -27,7 +27,7 @@ void CoordinationVisualization::draw_space(std::vector<std::vector<Point>>& all_
     // Generate lines and AGVs
     for (int idx = 0; idx < all_paths.size(); idx++)
     {
-        const auto &path = all_paths[idx];
+        const auto &path = all_paths[idx].get_final_physical_path_points();
         Int_t n = path.size();
         Double_t x[n], y[n];
         // Build the arrays with the coordinates of points

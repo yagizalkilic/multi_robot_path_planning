@@ -14,6 +14,7 @@
 #include "../include/rrt_star.h"
 #include "../include/rrt_star.h"
 #include "../include/velocity_scheduler.h"
+#include "../include/physical_path.h" 
 #include <thread>
 
 /**
@@ -45,18 +46,18 @@ std::vector<ros::Publisher> get_schedule_publishers( int pub_amt, ros::NodeHandl
  *
  * @param stored_paths paths that turtles will be following
  */
-void publishTurtlesForPaths(const std::vector<std::vector<Point>> stored_paths)
+void publishTurtlesForPaths(const std::vector<PhysicalPath> stored_paths)
 {
 
     for (size_t i = 0; i < stored_paths.size(); ++i)
     {
         std::string turtle_name = "turtle_" + std::to_string(i + 1);
 
-        double cur_x = (float)(stored_paths[i][0].coordinates[0]) / 10.0;
-        double cur_y = (float)(stored_paths[i][0].coordinates[1]) / 10.0;
+        double cur_x = (float)(stored_paths[i].get_final_physical_path_points()[0].coordinates[0]) / 10.0;
+        double cur_y = (float)(stored_paths[i].get_final_physical_path_points()[0].coordinates[1]) / 10.0;
 
-        double next_x = (float)(stored_paths[i][1].coordinates[0]) / 10.0;
-        double next_y = (float)(stored_paths[i][1].coordinates[1]) / 10.0;
+        double next_x = (float)(stored_paths[i].get_final_physical_path_points()[1].coordinates[0]) / 10.0;
+        double next_y = (float)(stored_paths[i].get_final_physical_path_points()[1].coordinates[1]) / 10.0;
 
         double angle = atan2(next_y - cur_y, next_x - cur_x);
 
@@ -77,18 +78,19 @@ int main(int argc, char** argv)
     // Coordination space properties
     int x_bound = 100; // max x value of any point on path
     int y_bound = 100; // max y value of any point on path
-    int AGV_amount = 3; // amount of all_paths = robot amount iteration = iteration + 1
-    int AGV_radius = 10; // radius of a circular agv
+    int AGV_amount = 4; // amount of all_paths = robot amount iteration = iteration + 1
+    int AGV_radius = 6; // radius of a circular agv
     double AGV_max_velocity = 4; // max velocity AGV can drive with
-    int path_min_stops = 3; // min number of times slope can be shifted
-    int path_max_stops = 4; // max number of times slope can be shifted
-    int path_length_min = 25; // min length of a path segment
-    int path_length_max = 40; // max length of a path segment  
+    int path_min_stops = 2; // min number of times slope can be shifted
+    int path_max_stops = 3; // max number of times slope can be shifted
+    int path_length_min = 15; // min length of a path segment
+    int path_length_max = 25; // max length of a path segment  
+    int node_amount = 300;
 
     // Initialize the space information, determine paths and collisions on time and space
     std::cout << "Initializing coordination space..." << std::endl;
-    auto collision_space = AGVCollisionSpace( x_bound, y_bound, AGV_amount, AGV_radius, path_min_stops, 
-                                           path_max_stops, path_length_min, path_length_max );
+    auto collision_space = AGVCollisionSpace( x_bound, y_bound, AGV_amount, node_amount, AGV_radius, 
+                                              path_min_stops,path_max_stops, path_length_min, path_length_max );
 
     auto all_paths = collision_space.get_paths();
     auto all_collisions_time = collision_space.get_collision_map();

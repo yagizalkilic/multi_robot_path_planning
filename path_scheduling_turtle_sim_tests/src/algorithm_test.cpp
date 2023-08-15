@@ -3,6 +3,8 @@
 #include "../include/rrt.h"
 #include "../include/coordination_visualization.h"
 #include "../include/rrt_star.h"
+#include "../include/physical_path.h" 
+
 
 int main(int argc, char *argv[]) 
 {
@@ -18,11 +20,12 @@ int main(int argc, char *argv[])
     int path_max_stops = 4; // max number of times slope can be shifted
     int path_length_min = 50; // min length of a path segment
     int path_length_max = 70; // max length of a path segment  
+    int node_amount = 300;
 
     // Initialize the space information, determine paths and collisions on time and space
     std::cout << "Initializing coordination space..." << std::endl;
-    auto collision_space = AGVCollisionSpace( x_bound, y_bound, AGV_amount, AGV_radius, path_min_stops, 
-                                           path_max_stops, path_length_min, path_length_max );
+    auto collision_space = AGVCollisionSpace( x_bound, y_bound, AGV_amount, node_amount, AGV_radius, 
+                                              path_min_stops,path_max_stops, path_length_min, path_length_max );
 
     auto all_paths = collision_space.get_paths();
     auto all_collisions_time = collision_space.get_collision_map();

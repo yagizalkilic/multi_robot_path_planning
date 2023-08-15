@@ -2,6 +2,7 @@
 #define VELOCITY_SCHEDULER_H
 
 #include "project_utilities.h"
+#include "physical_path.h"
 
 /**
  * Implementation of an RRT.
@@ -14,7 +15,7 @@
  */
 class VelocityScheduler {
 public:
-    VelocityScheduler(std::vector<std::vector<Point>> physical_paths, 
+    VelocityScheduler(std::vector<PhysicalPath> physical_paths, 
         std::vector<Node> temporal_path, double max_velocity);
 
     void calculate_intervals_and_schedules();
@@ -26,7 +27,7 @@ public:
     std::vector<std::vector<std::vector<double>>> get_velocity_duration_orientation();
 
 private:
-    std::vector<std::vector<Point>> physical_paths;
+    std::vector<PhysicalPath> physical_paths;
     std::vector<Node> temporal_path;
     double max_velocity;
 

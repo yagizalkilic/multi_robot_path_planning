@@ -1,6 +1,6 @@
 #include "../include/velocity_scheduler.h"
 
-VelocityScheduler::VelocityScheduler(std::vector<std::vector<Point>> physical_paths, 
+VelocityScheduler::VelocityScheduler(std::vector<PhysicalPath> physical_paths, 
 	std::vector<Node> temporal_path, double max_velocity)
 {
 	this->physical_paths = physical_paths;
@@ -136,7 +136,8 @@ void VelocityScheduler::calculate_distances_between_intervals()
         		first_index += schedule_intervals[i][n-1];
         		next_index += schedule_intervals[i][n];
         	}
-       		current_distances.push_back(calculate_total_distance(physical_paths[i], 
+       		current_distances.push_back(calculate_total_distance(
+       			physical_paths[i].get_final_physical_path_points(), 
        			schedules[i][first_index + 1], schedules[i][next_index]));
         }
         schedule_interval_distances_list.push_back(current_distances);
@@ -239,17 +240,15 @@ void VelocityScheduler::calculate_final_schedule()
 				}
 
 				double duration = 0.0;
-				double current_distance = calculate_distance(physical_paths[i][t], physical_paths[i][t_next]);
+				double current_distance = calculate_distance(physical_paths[i].get_final_physical_path_points()[t], 
+					physical_paths[i].get_final_physical_path_points()[t_next]);
 
-				if (current_total_time > 0.0 && total_distance > current_distance )
-				{
-					duration = current_total_time * current_distance / total_distance;
-				}
-				else if ( total_distance == 0.0 )
+				if (current_total_time > 0.0 )
 				{
 					duration = current_total_time / points_on_intervals[k].size();
 				}
-				double orientation = calculate_orientation(physical_paths[i][t], physical_paths[i][t_next]);
+				double orientation = calculate_orientation(physical_paths[i].get_final_physical_path_points()[t], 
+					physical_paths[i].get_final_physical_path_points()[t_next]);
 
 				final_duration_schedules[i].push_back(duration);
 				final_velocity_schedules[i].push_back(schedule_interval_average_velocities[i][k] / 10.0);

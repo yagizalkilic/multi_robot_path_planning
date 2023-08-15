@@ -2,6 +2,7 @@
 #define AGV_COLLISION_SPACE_H
 
 #include "project_utilities.h"
+#include "physical_path.h"
 
 /**
  * Space information needed to coordinate AGVs along paths.
@@ -15,11 +16,11 @@ class AGVCollisionSpace
 {
 public:
     // Constructor
-    AGVCollisionSpace(int x_bound, int y_bound, int AGV_amount, int AGV_radius,
-                      int path_min_stops, int path_max_stops, int path_length_min, int path_length_max);
+    AGVCollisionSpace(int x_bound, int y_bound, int AGV_amount, int path_subdivision_amount, int AGV_radius,int path_min_stops, 
+                      int path_max_stops, int path_length_min, int path_length_max );
 
     // Public getter for paths
-    const std::vector<std::vector<Point>>& get_paths() const
+    const std::vector<PhysicalPath>& get_paths() const
     {
         return paths;
     }
@@ -53,7 +54,7 @@ private:
     int path_length_max;
     int path_subdivision_amount;
 
-    std::vector<std::vector<Point>> paths;
+    std::vector<PhysicalPath> paths;
     std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash> collision_map;
     std::vector<std::pair<int, int>> collision_points;
 

@@ -7,13 +7,14 @@
  * @param p1 Second point
  * @return distance between points
  */
-double calculate_distance(const Point& p1, const Point& p2) {
-    if (p1.dimension != p2.dimension) 
+double calculate_distance(const Point& p1, const Point& p2) 
+{
+    if ( p1.dimension != p2.dimension ) 
     {
         // Handle the case when points have different dimensions
         throw std::runtime_error("Points have different dimensions");
     }
-    if(p1.coordinates == p2.coordinates)
+    if ( p1.coordinates == p2.coordinates )
     {
         return 0.0;
     }
@@ -291,4 +292,26 @@ double calculate_angular_velocity(double orientation_begin, double orientation_e
     double angular_velocity = delta_theta / duration;
 
     return angular_velocity;
+}
+
+/**
+ * Generates a point from a point that is a given distance away and in the direction of the 
+ * line between p1 and p2. Can only be used for 2 dimensional points.
+ *
+ * @param p1 beginning point
+ * @param p2 ending point
+ * @param distance from point 1 to final point
+ * @return generated point
+ */
+Point generate_point_between(const Point p1, const Point p2, double distance) 
+{
+    double totalDistance = calculate_distance(p1, p2);
+    double ratio = distance / totalDistance;
+    
+    Point newPoint;
+    newPoint.dimension = 2;
+    newPoint.coordinates.push_back(p1.coordinates[0] + ratio * (p2.coordinates[0] - p1.coordinates[0]));
+    newPoint.coordinates.push_back(p1.coordinates[1] + ratio * (p2.coordinates[1] - p1.coordinates[1]));
+    
+    return newPoint;
 }

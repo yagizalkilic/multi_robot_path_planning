@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>multi_robot_path_scheduling</name>
+  <name>path_scheduling_turtle_sim_tests</name>
   <version>1.0.0</version>
-  <description>Schedules n robots on predetermined paths</description>
+  <description>Schedules n robots on predetermined paths, simulates with turtlesim</description>
 
   <!-- One maintainer tag required, multiple allowed, one person per tag -->
   <!-- Example:  -->

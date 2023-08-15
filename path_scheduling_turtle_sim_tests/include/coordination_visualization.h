@@ -18,6 +18,7 @@
 #include "TImage.h"
 
 #include "project_utilities.h"
+#include "physical_path.h"
 
 /**
  * Visualizer for AGV coordination problem
@@ -31,7 +32,7 @@ public:
     // Constructor
     CoordinationVisualization( int space_boundary_x, int space_boundary_y, int time_boundary );
 
-    void draw_space(std::vector<std::vector<Point>>& all_paths, 
+    void draw_space(std::vector<PhysicalPath>& all_paths, 
         std::vector<std::pair<int, int>> all_collisions_space, int AGV_radius, char* canvas_name);
 
     void draw_time(int AGV_amount, std::vector<Node> path, std::vector<Node> all_nodes,

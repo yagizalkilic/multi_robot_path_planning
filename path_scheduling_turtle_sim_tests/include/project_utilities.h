@@ -22,7 +22,8 @@
 struct pair_hash 
 {
     template <class T1, class T2>
-    const std::size_t operator () (const std::pair<T1, T2>& p) const {
+    const std::size_t operator () (const std::pair<T1, T2>& p) const 
+    {
         auto h1 = std::hash<T1>{}(p.first);
         auto h2 = std::hash<T2>{}(p.second);
 
@@ -58,8 +59,6 @@ double calculate_orientation(Point point1, Point point2);
 std::vector<int> get_unique_neighbours(std::vector<int> num_list, int start_index, int end_index);
 std::vector<int> exclude_number(std::vector<int> num_list, int number, int start_index, int end_index);
 double calculate_angular_velocity(double orientation_begin, double orientation_end, double duration);
-
-
-
+Point generate_point_between(const Point p1, const Point p2, double distance);
 
 #endif // PROJECT_UTILITIES_H

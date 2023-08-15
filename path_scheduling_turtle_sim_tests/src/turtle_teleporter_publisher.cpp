@@ -10,6 +10,8 @@
 #include "../include/rrt.h"
 #include "../include/coordination_visualization.h"
 #include "../include/rrt_star.h"
+#include "../include/physical_path.h" 
+
 
 /**
  * Generates publishers for each path.
@@ -18,7 +20,7 @@
  * @param nh NodeHandle
  * @return path_publishers a vector of Publisher objects
  */
-std::vector<ros::Publisher> getPathPublishers(const std::vector<std::vector<Point>> stored_paths, ros::NodeHandle nh)
+std::vector<ros::Publisher> getPathPublishers(const std::vector<PhysicalPath> stored_paths, ros::NodeHandle nh)
 {
     std::vector<ros::Publisher> path_publishers;
     for ( int i = 0; i < stored_paths.size(); i++ )
@@ -119,7 +121,7 @@ nav_msgs::Path convertPathToMsg(std::vector<Point> stored_path)
  *
  * @param stored_paths paths that turtles will be following
  */
-void publishTurtlesForPaths(const std::vector<std::vector<Point>> stored_paths)
+void publishTurtlesForPaths(const std::vector<PhysicalPath> stored_paths)
 {
     turtlesim::Pose turtle_pose;
     turtle_pose.x = 0.0;
@@ -130,11 +132,11 @@ void publishTurtlesForPaths(const std::vector<std::vector<Point>> stored_paths)
     {
         std::string turtle_name = "turtle_" + std::to_string(i + 1);
 
-        double cur_x = (float)(stored_paths[i][0].coordinates[0]) / 10.0;
-        double cur_y = (float)(stored_paths[i][0].coordinates[1]) / 10.0;
+        double cur_x = (float)(stored_paths[i].get_final_physical_path_points()[0].coordinates[0]) / 10.0;
+        double cur_y = (float)(stored_paths[i].get_final_physical_path_points()[0].coordinates[1]) / 10.0;
 
-        double next_x = (float)(stored_paths[i][1].coordinates[0]) / 10.0;
-        double next_y = (float)(stored_paths[i][1].coordinates[1]) / 10.0;
+        double next_x = (float)(stored_paths[i].get_final_physical_path_points()[1].coordinates[0]) / 10.0;
+        double next_y = (float)(stored_paths[i].get_final_physical_path_points()[1].coordinates[1]) / 10.0;
 
         double angle = atan2(next_y - cur_y, next_x - cur_x);
 
@@ -224,11 +226,12 @@ int main(int argc, char** argv)
     int path_max_stops = 4; // max number of times slope can be shifted
     int path_length_min = 25; // min length of a path segment
     int path_length_max = 40; // max length of a path segment  
+    int node_amount = 300;
 
     // Initialize the space information, determine paths and collisions on time and space
     std::cout << "Initializing coordination space..." << std::endl;
-    auto collision_space = AGVCollisionSpace( x_bound, y_bound, AGV_amount, AGV_radius, path_min_stops, 
-                                           path_max_stops, path_length_min, path_length_max );
+    auto collision_space = AGVCollisionSpace( x_bound, y_bound, AGV_amount, node_amount, AGV_radius, 
+                                              path_min_stops,path_max_stops, path_length_min, path_length_max );
 
     auto all_paths = collision_space.get_paths();
     auto all_collisions_time = collision_space.get_collision_map();
@@ -291,7 +294,7 @@ int main(int argc, char** argv)
         robot_amount_pub.publish(robot_amount);
         for ( int i = 0; i < path_publishers.size(); i++ )
         {
-            path_publishers[i].publish(convertPathToMsg(all_paths[i]));
+            path_publishers[i].publish(convertPathToMsg(all_paths[i].get_final_physical_path_points()));
         }
 
         for ( int i = 0; i < schedule_publishers.size(); i++ )
