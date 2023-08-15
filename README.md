@@ -48,7 +48,7 @@ Turtle simulations output:
 
 Turtle teleporter simulations output:
 
-[turtle_scheduling.webm](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/27c78176-b886-4a27-8e2d-2c94476f77ac)
+[turtle_teleporter.webm](https://github.com/yagizalkilic/multi_robot_path_planning/assets/43394146/dc184f09-d157-48f6-99e0-8e0fb9d906ee)
 
 - py_tests file contains scripts for the initial testing of the general methods:
   - simple_coordination_graph.py: simulates coordination graphs for 2 robots along a specified path.
