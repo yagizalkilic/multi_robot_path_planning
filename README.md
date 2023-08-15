@@ -10,7 +10,7 @@ A set of n robots travel along predefined paths. The purpose of this project is 
 
 ## Program information
 
-- The multi_robot_path_scheduling catkin package contains 5 executables. (In order to execute the program, https://root.cern/ should be installed.)
+- The path_scheduling_turtle_sim_tests package contains 5 executables. (In order to execute the program, https://root.cern/ should be installed.)
 
 - turtle_publisher:  generates turtles from turtlesim library, generates paths for the turtles, and calculates schedules for the paths.
 
@@ -27,8 +27,8 @@ A set of n robots travel along predefined paths. The purpose of this project is 
 
       - In a new terminal run: roscore
       - In a new terminal run: rosrun turtlesim turtlesim_node 
-      - In a new terminal (source your workspace if not sourced) run: rosrun multi_robot_path_scheduling turtle_publisher 
-      - In a new terminal (source your workspace if not sourced) run: rosrun multi_robot_path_scheduling turtle_subscriber
+      - In a new terminal (source your workspace if not sourced) run: rosrun path_scheduling_turtle_sim_tests turtle_publisher 
+      - In a new terminal (source your workspace if not sourced) run: rosrun path_scheduling_turtle_sim_tests turtle_subscriber
     - If you wish to only run the RRT, RRT* and see the outputs:
 
       - In a new terminal (source your workspace if not sourced) run: rosrun multi_robot_path_scheduling algorithm_test 
