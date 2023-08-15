@@ -55,8 +55,6 @@ elseif(DEFINED ROOT_CMAKE_DIR)
 # )
 endif(DEFINED ENV{ROOTSYS})
 
-set(CMAKE_PREFIX_PATH /home/milvus/root ${CMAKE_PREFIX_PATH})
-
 find_package(ROOT REQUIRED COMPONENTS Net Core RIO Hist Graf Graf3d Gpad Tree Rint)
 
 include_directories(${ROOT_INCLUDE_DIRS})
