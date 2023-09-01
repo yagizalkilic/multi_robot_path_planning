@@ -66,9 +66,6 @@ private:
     std::pair<double, std::vector<std::pair<double, double>>> duration_restricted_schedule;
     std::vector<double> end_vels;
 
-    double compute_k(double V_1, double V_2, double V_3, double t_1, double t_2, double t_3, double T, double a, double D);
-    std::vector<std::pair<double, double>> get_new_schedule_k(double V_1, double V_2, double V_3, double t_1, double t_2, double t_3, double T, double a, double D, double k_value);
-
 };
 
 #endif // NODE_SCHEDULE_H

@@ -293,9 +293,6 @@ void CoordinationVisualization::draw_velocity(double max_vel, int AGV_amount, do
         std::vector<double> time;
         std::vector<double> velocity;
         std::vector<double> acceleration;
-        std::vector<double> total_distances;
-        double total_distance = 0;
-        double max_total_distance = 0;
 
         for ( int i = 0; i < individual_schedules[a].size(); i++ )
         {
@@ -309,25 +306,6 @@ void CoordinationVisualization::draw_velocity(double max_vel, int AGV_amount, do
             {
                 acceleration.push_back(acceleration.back());
             }
-            if ( i != 0 )
-            {
-                total_distance += (individual_schedules[a][i].first - individual_schedules[a][i-1].first) * individual_schedules[a][i].second;
-                total_distances.push_back(total_distance);
-            }
-            else
-            {
-                total_distance += individual_schedules[a][i].first * individual_schedules[a][i].second;
-                total_distances.push_back(total_distance);
-            }
-            if ( total_distance > max_total_distance )
-            {
-                max_total_distance = total_distance;
-            }
-        }
-        double scale = max_vel * 2 / max_total_distance ;
-        for ( int i = 0; i < total_distances.size(); i++ )
-        {
-            total_distances[i] = scale * total_distances[i];
         }
 
         TGraph *tv_graph = new TGraph(time.size(), time.data(), velocity.data());
@@ -346,24 +324,14 @@ void CoordinationVisualization::draw_velocity(double max_vel, int AGV_amount, do
         ta_graph->SetLineColor(kRed);
         ta_graph->SetMarkerColor(kRed);
 
-        TGraph *td_graph = new TGraph(time.size(), time.data(), total_distances.data());
-        td_graph->GetXaxis()->SetLimits(0, individual_schedules[a][individual_schedules[a].size() - 1].first); 
-        td_graph->GetYaxis()->SetRangeUser(0, max_vel * 10); 
-        td_graph->SetMarkerStyle(20);
-        td_graph->SetMarkerSize(0.5);
-
-        td_graph->SetLineColor(kGreen);
-        td_graph->SetMarkerColor(kGreen);
-
-        mg->Add(td_graph, "PL");
         mg->Add(ta_graph, "PL");
         mg->Add(tv_graph, "P");
 
         mg->SetTitle(title); 
         mg->SetName(title); 
 
-        mg->GetXaxis()->SetTitle((std::string( "time " + std::to_string(a+1) + ", distance was scaled down by " + std::to_string(scale))).c_str());
-        mg->GetYaxis()->SetTitle((std::string( "distance(g) / velocity(b) / acceleration(r)" + std::to_string(a+1)) ).c_str());
+        mg->GetXaxis()->SetTitle((std::string( "time " + std::to_string(a+1)) ).c_str());
+        mg->GetYaxis()->SetTitle((std::string( "velocity(b) / acceleration(r) " + std::to_string(a+1)) ).c_str());
 
         tv_canvas->cd(cd_count);
         gPad->SetGrid(1,1);

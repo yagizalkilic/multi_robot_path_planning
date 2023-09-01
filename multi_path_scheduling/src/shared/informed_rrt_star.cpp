@@ -1,6 +1,6 @@
-#include "../../include/connected_rrt_star.h"
+#include "../../include/informed_rrt_star.h"
 
-ConnectedRRTStar::ConnectedRRTStar(int num_dimensions, std::vector<int> space_side_length, 
+InformedRRTStar::InformedRRTStar(int num_dimensions, std::vector<int> space_side_length, 
          std::unordered_map<std::pair<int, int>, std::unordered_map<std::pair<int, int>, bool, pair_hash>, pair_hash> dimension_pair_correspondence)
 {
     this->num_dimensions = num_dimensions;
@@ -33,7 +33,7 @@ ConnectedRRTStar::ConnectedRRTStar(int num_dimensions, std::vector<int> space_si
  * Generates an RRT. At each step generates a node, calculates generation times.
  * Exits if the target_point is found or the max_nodes is exceeded.
  */
-void ConnectedRRTStar::generate_tree() 
+void InformedRRTStar::generate_tree() 
 {
     // Time tracking parameters
     auto total_start_time = std::chrono::steady_clock::now();
@@ -41,7 +41,6 @@ void ConnectedRRTStar::generate_tree()
 
     bool done = false;
     bool node_generation_possible = false;
-    bool target_node_generation_possible = false;
     int point_count = 0;
 
     while (!done) 
@@ -49,9 +48,8 @@ void ConnectedRRTStar::generate_tree()
         auto start_time = std::chrono::steady_clock::now();
 
         // Generate new node
-        node_generation_possible = generate_node(point_count, &node_list, false);
-        target_node_generation_possible = generate_node(point_count, &target_node_list, true);
-        point_count += 2;
+        node_generation_possible = generate_node(point_count);
+        point_count++;
 
         auto end_time = std::chrono::steady_clock::now();
 
@@ -66,7 +64,7 @@ void ConnectedRRTStar::generate_tree()
         // We are done if the path is complete, if the max amount of nodes is traversed, if a certain
         // amount of time has passed since the start of tree generation, or if there is no new
         // node that can be successfully generated.
-        if (is_done(node_list.back().point, target_node_list.back().point) || max_nodes < point_count || 
+        if (is_done(node_list.back().point) || max_nodes < point_count || 
             total_elapsed_time.count() > max_seconds || !node_generation_possible) 
         {
             done = true;
@@ -76,6 +74,17 @@ void ConnectedRRTStar::generate_tree()
     auto total_end_time = std::chrono::steady_clock::now();
     total_elapsed_time = total_end_time - total_start_time;
     average_node_generation = total_node_gen_time / point_count;
+
+    // The final node is always: (space_side_length, ..., space_side_length)
+    // This is true even if the path is incomplete.
+    Node final_node;
+    final_node.name = "q" + std::to_string(node_list.size());
+    final_node.point = target_point;
+    final_node.parent = node_list.back().name;
+    final_node.cost = node_list.back().cost + calculate_distance(node_list.back().point, target_point);
+
+    node_list.push_back(final_node);
+    std::cout << std::endl;;
 }
 
 /**
@@ -84,9 +93,9 @@ void ConnectedRRTStar::generate_tree()
  * @param point Current point to compare with the target
  * @return true if the distance is less than the predetermined amount, false otherwise
  */
-bool ConnectedRRTStar::is_done(const Point& point1, const Point& point2)  
+bool InformedRRTStar::is_done(const Point& point) const 
 {
-    return is_valid_path(point1, point2);
+    return calculate_distance(target_point, point) < final_distance;
 }
 
 /**
@@ -98,20 +107,12 @@ bool ConnectedRRTStar::is_done(const Point& point1, const Point& point2)
  * @param point_count Current count of node amount
  * @return true if generation is possible, false otherwise
  */
-bool ConnectedRRTStar::generate_node(int point_count, std::vector<Node>* some_node_list, bool is_targeted) 
+bool InformedRRTStar::generate_node(int point_count) 
 {
     bool point_ok = false;
     int iteration = 0;
-    std::string node_name = "";
 
-    if ( !is_targeted )
-    {
-        node_name = "q" + std::to_string(some_node_list->size());
-    }
-    else
-    {
-        node_name = "t" + std::to_string(some_node_list->size());
-    }
+    std::string node_name = "q" + std::to_string(node_list.size());
 
     Point new_point;
     Node parent;
@@ -123,14 +124,23 @@ bool ConnectedRRTStar::generate_node(int point_count, std::vector<Node>* some_no
         {
             return false;
         }
+
         Point point;
-        point = generate_random_point(space_side_length, num_dimensions);
+        // Generate around target 25% of the time
+        if (point_count % 4 == 2 && iteration < 5) 
+        {
+            point = generate_around_goal(space_side_length, radius, target_point);
+        } 
+        else 
+        {
+            point = generate_random_point(space_side_length, num_dimensions);
+        }
 
         // Print current node count to the terminal for debugging.
         std::cout << point_count << ", ";
 
         // Find the nearest node to the randomly generated node
-        parent = (*some_node_list)[nearest_node(point, *some_node_list)];
+        parent = node_list[nearest_node(point)];
 
         // If the randomly generated point is on the parent point discard the point.
         if (parent.point.coordinates == point.coordinates) 
@@ -198,10 +208,10 @@ bool ConnectedRRTStar::generate_node(int point_count, std::vector<Node>* some_no
     next_node.cost = parent.cost + calculate_distance(parent.point, new_point);
 
 
-    some_node_list->push_back(next_node);
+    node_list.push_back(next_node);
 
     // Rewire the tree (RRT* extension)
-    rewire_tree(next_node, *some_node_list);
+    rewire_tree(next_node);
 
     return true;
 }
@@ -212,15 +222,15 @@ bool ConnectedRRTStar::generate_node(int point_count, std::vector<Node>* some_no
  *
  * @param new_node The newly added node in the tree.
  */
-void ConnectedRRTStar::rewire_tree(Node& new_node, std::vector<Node> some_node_list)
+void InformedRRTStar::rewire_tree(Node& new_node)
 {
     // Find all nodes within a certain radius from the new_node
-    std::vector<int> nearby_nodes = find_k_nearest_nodes(new_node, 30, some_node_list);
+    std::vector<int> nearby_nodes = find_k_nearest_nodes(new_node, 30);
 
     // Update the parent of each nearby node if it improves the cost
     for (int node_index : nearby_nodes)
     {
-        Node& nearby_node = some_node_list[node_index];
+        Node& nearby_node = node_list[node_index];
         // Calculate the cost to reach the nearby_node via the new_node
         double dist = calculate_distance(nearby_node.point, new_node.point);
         double cost_via_new_node = new_node.cost + dist;
@@ -242,14 +252,14 @@ void ConnectedRRTStar::rewire_tree(Node& new_node, std::vector<Node> some_node_l
  * @param point Point to find the nearest node around
  * @return least_node Node that has the least distance from the point
  */
-int ConnectedRRTStar::nearest_node(const Point& point, std::vector<Node> some_node_list) const 
+int InformedRRTStar::nearest_node(const Point& point) const 
 {
     double least_distance = INT_MAX;
     int least_node = 0;
 
-    for (int i = 0; i < some_node_list.size(); ++i) 
+    for (int i = 0; i < node_list.size(); ++i) 
     {
-        double cur_dist = calculate_distance(point, some_node_list[i].point);
+        double cur_dist = calculate_distance(point, node_list[i].point);
         if (least_distance > cur_dist) 
         {
             least_distance = cur_dist;
@@ -265,7 +275,7 @@ int ConnectedRRTStar::nearest_node(const Point& point, std::vector<Node> some_no
  * @param points List of points to check
  * @return true if there is no collision, false otherwise
  */
-bool ConnectedRRTStar::is_valid(std::vector<Point> points)
+bool InformedRRTStar::is_valid(std::vector<Point> points)
 {
     for (const auto& entry : dimension_pair_correspondence) 
     {
@@ -298,14 +308,14 @@ bool ConnectedRRTStar::is_valid(std::vector<Point> points)
  * @param point2 The ending point of the path.
  * @return true if the path is collision-free, false otherwise.
  */
-bool ConnectedRRTStar::is_valid_path(const Point& point1, const Point& point2) 
+bool InformedRRTStar::is_valid_path(const Point& point1, const Point& point2) 
 {
     // Calculate the direction vector between the two points
     std::vector<int> direction;
     direction = get_distances(point2, point1);
 
     // Calculate the number of steps to divide the path into
-    int num_steps = space_side_length[0]; // You can adjust this value for finer collision checking
+    int num_steps = 20; // You can adjust this value for finer collision checking
 
     // Check for collisions at each step along the path
     for (int step = 0; step <= num_steps; ++step)
@@ -335,7 +345,7 @@ bool ConnectedRRTStar::is_valid_path(const Point& point1, const Point& point2)
 /**
  * Generates the path from the final node to the first node.
  */
-void ConnectedRRTStar::find_final_path() 
+void InformedRRTStar::find_final_path() 
 {
     auto cur_node = node_list.back();
     path_nodes.push_back(cur_node);
@@ -343,7 +353,6 @@ void ConnectedRRTStar::find_final_path()
     // Iterate through all nodes in reverse order.
     for (int i = static_cast<int>(node_list.size()) - 1; i >= 0; --i)
     {
-        std::cout << cur_node.name << std::endl;
         if (node_list[i].name == cur_node.parent) 
         {
             path_nodes.insert(path_nodes.begin(), node_list[i]);
@@ -352,27 +361,38 @@ void ConnectedRRTStar::find_final_path()
             continue;
         }
     }
-    auto target_cur_node = target_node_list.back();
-    path_nodes.push_back(target_cur_node);
-    // Iterate through all target nodes.
-    for (int i = static_cast<int>(target_node_list.size()) - 1; i >= 0; --i)
-    {
-        std::cout << target_cur_node.name << std::endl;
-        if (target_node_list[i].name == target_cur_node.parent) 
-        {
-            path_nodes.push_back( target_node_list[i]);
-            target_cur_node = target_node_list[i];
-            i = static_cast<int>(target_node_list.size()) - 1;
-            continue;
-        }
-    }
 }
 
+/**
+ * Find all nodes that are within a given radius from a given node in the tree.
+ *
+ * @param node The node whose neighbors need to be found.
+ * @param radius The maximum distance within which to consider nodes.
+ * @return A vector of indices of nodes that fall within the given radius from the node in the node_list.
+ */
+std::vector<int> InformedRRTStar::find_nodes_within_radius(const Node& node, double radius) const
+{
+    std::vector<int> nodes_within_radius;
+
+    for (size_t i = 0; i < node_list.size(); ++i)
+    {
+        if (node_list[i].name == node.name)
+            continue;
+
+        double distance = calculate_distance(node_list[i].point, node.point);
+        if (distance <= radius)
+        {
+            nodes_within_radius.push_back(i);
+        }
+    }
+
+    return nodes_within_radius;
+}
 
 /**
  * Print time tracking parameters.
  */
-void ConnectedRRTStar::show_longest_generation() const 
+void InformedRRTStar::show_longest_generation() const 
 {
     // Convert durations to seconds for easier display
     double longest_gen_time_seconds = longest_gen_time.count();
@@ -388,7 +408,7 @@ void ConnectedRRTStar::show_longest_generation() const
 /**
  * Initialize the space required by the RRT.
  */
-void ConnectedRRTStar::initialize_n_space()
+void InformedRRTStar::initialize_n_space()
 {
     start_point.dimension = num_dimensions;
     start_point.coordinates.resize(num_dimensions, 0);
@@ -404,13 +424,7 @@ void ConnectedRRTStar::initialize_n_space()
     first_node.point = start_point;
     first_node.parent = "None";
 
-    Node target_first_node;
-    target_first_node.name = "t0";
-    target_first_node.point = target_point;
-    target_first_node.parent = "None";
-
     node_list.push_back(first_node);
-    target_node_list.push_back(target_first_node);
 }
 
 /**
@@ -420,16 +434,16 @@ void ConnectedRRTStar::initialize_n_space()
  * @param k The number of nearest nodes to find.
  * @return A vector of indices of the k nearest nodes in the node_list.
  */
-std::vector<int> ConnectedRRTStar::find_k_nearest_nodes(const Node& node, int k, std::vector<Node> some_node_list) const
+std::vector<int> InformedRRTStar::find_k_nearest_nodes(const Node& node, int k) const
 {
     std::vector<std::pair<int, double>> nearest_nodes;
 
-    for (size_t i = 0; i < some_node_list.size(); ++i)
+    for (size_t i = 0; i < node_list.size(); ++i)
     {
         if (node_list[i].name == node.name)
             continue;
 
-        double distance = calculate_distance(some_node_list[i].point, node.point);
+        double distance = calculate_distance(node_list[i].point, node.point);
         nearest_nodes.emplace_back(i, distance);
     }
 
@@ -444,4 +458,27 @@ std::vector<int> ConnectedRRTStar::find_k_nearest_nodes(const Node& node, int k,
     }
 
     return result;
+}
+
+    std::vector<std::vector<double>> transform(double value) {
+        // Define your n-dimensional transformation logic here
+        std::vector<std::vector<double>> transformationMatrix;
+        // Fill in the transformationMatrix based on your logic
+        return transformationMatrix;
+    }
+
+void InformedRRTStar::drawEllipse(int dimensions) 
+{
+    double pi = 3.14159265358979323846;
+    std::vector<double> t;
+    for (double it = 0; it <= 2 * pi + 0.1; it += 0.1) {
+        t.push_back(it);
+    }
+
+    std::vector<std::vector<int>> coordinates(dimensions);
+    for (int i = 0; i < dimensions; ++i) {
+        coordinates[i].resize(t.size());
+    }
+
+    std::vector<std::vector<double>> transformMatrix = transform(c_best / 2); // You'll need to define the transform method and provide c_best
 }
