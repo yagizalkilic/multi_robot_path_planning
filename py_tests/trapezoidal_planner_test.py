@@ -6,7 +6,7 @@ from sympy import symbols, sqrt
 
 a = 0.5
 v_max = 0.4
-d = 0.55
+d = 0.25
 
 def quadratic_velocity(a, b, c, t):
     quadratic_list = []

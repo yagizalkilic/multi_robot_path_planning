@@ -81,13 +81,13 @@ int main(int argc, char** argv)
     int y_bound = 100; // max y value of any point on path
     int AGV_amount = 7; // amount of all_paths = robot amount iteration = iteration + 1
     int AGV_radius = 6; // radius of a circular agv
-    double AGV_max_velocity = 1.0; // max velocity AGV can drive with
+    double AGV_max_velocity = 4.0; // max velocity AGV can drive with
     int path_min_stops = 1; // min number of times slope can be shifted
     int path_max_stops = 1; // max number of times slope can be shifted
     int path_length_min = 30; // min length of a path segment
     int path_length_max = 35; // max length of a path segment  
-    double segment_size = 3.0;
-    double max_acceleration = 0.8;
+    double segment_size = 1.6;
+    double max_acceleration = 5.0;
     double dt = 0.05;
 
     // Initialize the space information, determine paths and collisions on time and space
