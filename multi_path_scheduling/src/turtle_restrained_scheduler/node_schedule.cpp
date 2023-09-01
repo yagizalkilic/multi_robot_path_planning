@@ -107,9 +107,31 @@ void NodeSchedule::node_scheduler_time_constrained()
 		}
 		else
 		{
-	    	if ( i != longest_any_time_plan )
-	    	{
+			if ( i != longest_any_time_plan && any_time_plans[i].size() == 4 )
+			{
+				double k_value = compute_k(any_time_plans[i][0].second, any_time_plans[i][1].second, any_time_plans[i][3].second, 
+					any_time_plans[i][1].first, any_time_plans[i][2].first - any_time_plans[i][1].first, 
+					any_time_plans[i][3].first - any_time_plans[i][2].first, node_time, max_acc, distance_within_nodes[i]);
 
+				if ( k_value == 0.0 || std::isnan(k_value))
+				{
+		    		std::vector<std::pair<double, double>> new_plan = quadratic_scheduler(start_vels[i], max_end_vels[i], max_vel, distance_within_nodes[i], node_time);
+		    		end_vels[i] = new_plan.back().second;
+		    		time_constrained_plans[i] = new_plan;
+				}
+				else
+				{
+					auto k_schedule = get_new_schedule_k(any_time_plans[i][0].second, any_time_plans[i][1].second, any_time_plans[i][3].second, 
+						any_time_plans[i][1].first, any_time_plans[i][2].first - any_time_plans[i][1].first, 
+						any_time_plans[i][3].first - any_time_plans[i][2].first, node_time, max_acc, distance_within_nodes[i], k_value);
+
+					std::vector<std::pair<double, double>> new_plan = segment_schedule(k_schedule);
+		    		time_constrained_plans[i] = new_plan;
+		    		end_vels[i] = new_plan.back().second; 
+				}
+			}
+	    	else if ( i != longest_any_time_plan )
+	    	{
 	    		std::vector<std::pair<double, double>> new_plan = quadratic_scheduler(start_vels[i], max_end_vels[i], max_vel, distance_within_nodes[i], node_time);
 	    		end_vels[i] = new_plan.back().second;
 	    		time_constrained_plans[i] = new_plan;
@@ -275,4 +297,69 @@ void NodeSchedule::arrange_backward_movement()
 			}
 		}
 	}
+}
+
+double NodeSchedule::compute_k(double V_1, double V_2, double V_3, double t_1, double t_2, double t_3, double T, double a, double D) 
+{
+    double denominator = 2 * a * V_2 * (std::pow(V_3, 2) - std::pow(V_1, 2));
+    
+    if (denominator != 0) 
+    {
+        double term1 = (-std::sqrt(std::pow(a * V_2 * std::pow(V_1, 2) - a * V_2 * std::pow(V_3, 2) - 2 * a + 2 * V_1 + 2 * V_3, 2) - 4 * (a * V_2 * std::pow(V_3, 2) - a * std::pow(V_1, 2) * V_2) * (2 * a * D * V_2 - 2 * a * t_1 * V_2 - 2 * a * t_2 * V_2 - 2 * a * t_3 * V_2 + 2 * a * T * V_2 - 2 * V_1 - 2 * V_3)) - a * V_2 * std::pow(V_1, 2) + a * V_2 * std::pow(V_3, 2) + 2 * a - 2 * V_1 - 2 * V_3);
+        double term2 = (2 * std::pow(a, 2) * t_1 * std::pow(V_2, 2) * V_1 + 2 * std::pow(a, 2) * t_2 * std::pow(V_2, 2) * V_1 + 2 * std::pow(a, 2) * t_3 * std::pow(V_2, 2) * V_1 - 2 * std::pow(a, 2) * t_1 * std::pow(V_2, 2) * V_3 - 2 * std::pow(a, 2) * t_2 * std::pow(V_2, 2) * V_3 - 2 * std::pow(a, 2) * t_3 * std::pow(V_2, 2) * V_3 - 2 * std::pow(a, 2) * T * std::pow(V_2, 2) * V_1 + 2 * std::pow(a, 2) * T * std::pow(V_2, 2) * V_3 - std::sqrt(std::pow(a * V_2 * std::pow(V_1, 2) - a * V_2 * std::pow(V_3, 2) - 2 * a + 2 * V_1 + 2 * V_3, 2) - 4 * (a * V_2 * std::pow(V_3, 2) - a * std::pow(V_1, 2) * V_2) * (2 * a * D * V_2 - 2 * a * t_1 * V_2 - 2 * a * t_2 * V_2 - 2 * a * t_3 * V_2 + 2 * a * T * V_2 - 2 * V_1 - 2 * V_3)) + a * V_2 * std::pow(V_1, 2) - a * V_2 * std::pow(V_3, 2) + 2 * a - 2 * V_1 - 2 * V_3);
+
+        if (term1 != 0 && term2 != 0 ) 
+        {
+            double k = term1 / denominator;
+            std::cout << "k = " << k << std::endl;
+            return k;
+        }
+        else 
+        {
+            std::cout << "Numerator1 or Numerator2 is zero, cannot compute k." << std::endl;
+        }
+    }
+    else 
+    {
+        std::cout << "Denominator is zero, k is undefined." << std::endl;
+    }
+
+    return 0.0; // Return 0.0 as a default value if an error occurs.
+}
+
+std::vector<std::pair<double, double>> NodeSchedule::get_new_schedule_k(double V_1, double V_2, double V_3, double t_1, double t_2, double t_3, double T, double a, double D, double k_value) 
+{
+    double current_time = 0;
+    std::vector<std::pair<double, double>> k_list;
+    double total_dist = 0;
+    
+    double k = k_value;
+
+    double V_1_n = V_1 / k;
+    double V_2_n = V_2 / k;
+    double V_3_n = V_3 / k;
+    
+    k_list.push_back(std::make_pair(0, V_1));
+    
+    current_time += std::abs(V_1 - V_1_n) / a;
+    total_dist += V_1_n * std::abs(V_1 - V_1_n) / a + std::abs(V_1 - V_1_n) * std::abs(V_1 - V_1_n) / (2 * a);
+    k_list.push_back(std::make_pair(current_time, V_1_n));
+    
+    current_time += t_1;
+    total_dist += (V_2_n - V_1_n) / a * V_1_n + (V_2_n - V_1_n) / (2 * a) * (V_2_n - V_1_n);
+    k_list.push_back(std::make_pair(current_time, V_2_n));
+    
+    current_time += (T - t_1 - t_3 - std::abs(V_1 - V_1_n) / a - std::abs(V_3 - V_3_n) / a);
+    total_dist += (T - t_1 - t_3 - std::abs(V_1 - V_1_n) / a - std::abs(V_3 - V_3_n) / a) * V_2_n;
+    k_list.push_back(std::make_pair(current_time, V_2_n));
+    
+    current_time += t_3;
+    total_dist += (V_2_n - V_3_n) / a * V_3_n + (V_2_n - V_3_n) / (2 * a) * (V_2_n - V_3_n);
+    k_list.push_back(std::make_pair(current_time, V_3_n));
+    
+    current_time += std::abs(V_3 - V_3_n) / a;
+    total_dist += V_3_n * std::abs(V_3 - V_3_n) / a + std::abs(V_3 - V_3_n) * std::abs(V_3 - V_3_n) / (2 * a);
+    k_list.push_back(std::make_pair(current_time, V_3));
+    
+    return k_list;
 }

@@ -12,6 +12,7 @@
 #include "../../include/rrt.h"
 #include "../../include/coordination_visualization.h"
 #include "../../include/rrt_star.h"
+#include "../../include/connected_rrt_star.h"
 #include "../../include/physical_path.h"
 #include "../../include/node_schedule.h" 
 #include "../../include/coordinated_motion_profiler.h" 
@@ -81,13 +82,13 @@ int main(int argc, char** argv)
     int y_bound = 100; // max y value of any point on path
     int AGV_amount = 7; // amount of all_paths = robot amount iteration = iteration + 1
     int AGV_radius = 6; // radius of a circular agv
-    double AGV_max_velocity = 1.0; // max velocity AGV can drive with
+    double AGV_max_velocity = 4.0; // max velocity AGV can drive with
     int path_min_stops = 1; // min number of times slope can be shifted
     int path_max_stops = 1; // max number of times slope can be shifted
     int path_length_min = 30; // min length of a path segment
     int path_length_max = 35; // max length of a path segment  
-    double segment_size = 3.0;
-    double max_acceleration = 0.8;
+    double segment_size = 1.6;
+    double max_acceleration = 5.0;
     double dt = 0.05;
 
     // Initialize the space information, determine paths and collisions on time and space
@@ -109,12 +110,12 @@ int main(int argc, char** argv)
     // Construct the RRT* and determine the time path
     std::cout << "Constructing the RRT*..." << std::endl;
 
-    auto coordination_RRT_star = RRTStar(AGV_amount, all_collisions_dimensions, all_collisions_time);
+    auto coordination_RRT_star = ConnectedRRTStar(AGV_amount, all_collisions_dimensions, all_collisions_time);
     coordination_RRT_star.show_longest_generation();
     auto path_RRT_star = coordination_RRT_star.get_final_path();
     auto all_nodes_RRT_star = coordination_RRT_star.get_all_nodes();
 
-    visualizer.draw_time(AGV_amount, path_RRT_star, all_nodes_RRT_star, all_collisions_time, "rrt_star_time_canvas");
+    visualizer.draw_time(AGV_amount, path_RRT_star, all_nodes_RRT_star, all_collisions_time, "connected_rrt_star_time_canvas");
 
     // Combine RRT* and the physical paths to create a schedule
     std::cout << "Calculating schedule..." << std::endl;
