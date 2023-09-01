@@ -1,0 +1,17 @@
+<launch>
+    <!-- Start turtlesim_node -->
+    <node name="turtlesim_node" pkg="turtlesim" type="turtlesim_node" output="screen" />
+
+    <!-- Wait for a moment to let turtlesim_node start properly -->
+    <rosparam param="delay_seconds">3</rosparam>
+    <node name="delay_node" pkg="rosparam" type="load" respawn="false" output="screen">
+        <param name="param_name" type="string" value="/delay_seconds" />
+    </node>
+
+    <!-- Start turtle_teleporter_publisher -->
+    <node name="turtle_teleporter_publisher" pkg="multi_path_scheduling" type="turtle_teleporter_publisher" output="screen" />
+
+    <!-- Start turtle_teleporter_subscriber -->
+    <node name="turtle_teleporter_subscriber" pkg="multi_path_scheduling" type="turtle_teleporter_subscriber" output="screen" />
+</launch>
+

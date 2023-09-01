@@ -463,7 +463,7 @@ lines = []
 for i in range(line_amount):
     x, y = generate_curve(length_min, length_max, num_segments, min_num_stops, max_num_stops, x_bound, y_bound)
     lines.append((x,y))
-print(lines)
+
 # Robot variables
 radius = 10 # Radius of a circular robot
 num_robots = line_amount

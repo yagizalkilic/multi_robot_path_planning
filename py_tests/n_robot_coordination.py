@@ -327,15 +327,6 @@ class RRT:
                     return False
         
         return True
-    
-    def execute_bias_strategy(self, strategy):
-        match strategy:
-            case "CA":
-                return self.complete_any()
-            case "RJ":
-                return self.resolve_junction()
-            case "RC":
-                return self.resolve_convoy()
 
     def find_final_path(self):
         cur_node = self.node_list[-1]
@@ -419,9 +410,6 @@ elapsed_time = end_time - start_time
 print(f"Elapsed time while calculating schedule: {elapsed_time}")
 
 schedule = schedule_rrt.get_final_path()
-
-for s in schedule:
-    print(s)
 
 best_distance = distance(schedule_rrt.start_point, schedule_rrt.target_point)
 obtained_distance = get_distance_combination(schedule)

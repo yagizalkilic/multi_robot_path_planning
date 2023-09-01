@@ -109,7 +109,6 @@ plt.ylim(0, total_travel_time_2)
 plt.title('Collision Points')
 
 collusion_points = set(zip(collision_points_x, collision_points_y))
-print(collusion_points)
 
 rrt_p_queue = []
 heapq.heapify(rrt_p_queue)
